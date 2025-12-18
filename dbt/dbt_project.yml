@@ -33,9 +33,3 @@ models:
       +materialized: view
     marts:
       +materialized: view
-
-vars:
-  # Required OpenMetadata configuration
-  openmetadata_host_port: "{{ env_var('OPENMETADATA_HOST_PORT') }}"
-  openmetadata_jwt_token: "{{ env_var('OPENMETADATA_JWT_TOKEN') }}"
-  openmetadata_service_name: "marketing_analytics"

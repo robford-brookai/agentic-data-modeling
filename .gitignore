@@ -1,0 +1,7 @@
+venv/
+.env
+.DS_Store
+openmetadata/docker-volume/*
+dbt/target/*
+dbt/logs/*
+dbt/.user.yml
