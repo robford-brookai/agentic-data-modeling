@@ -56,6 +56,7 @@ This  command will:
 1. Start PostgreSQL and load 148K rows from public S3 bucket
 2. Run dbt to create 17 analytics models (staging, intermediate, marts)
 3. Start OpenMetadata at http://localhost:8585
+4. Visit Metabase main dashboard at http://localhost:3000/dashboard/2-agentic-modeling-demo
 
 **Total:** 23 tables/views ready for metadata ingestion
 
@@ -83,8 +84,9 @@ Password: password
 
 Select `marketing` as the schema to connect to.
 
-**Important**: Use `host.docker.internal` as the host (not `localhost` or `postgresql`) because Metabase runs inside Docker and needs to access the PostgreSQL container.
-
+**Important**:
+- Use `host.docker.internal` as the host (not `localhost` or `postgresql`) because Metabase runs inside Docker and needs to access the PostgreSQL container
+- The seeder will automatically trigger a schema sync via Metabase API to populate table metadata immediately
 
 ## What You Get
 

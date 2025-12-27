@@ -619,6 +619,25 @@ services:
     networks:
       - app_net
 
+  seed-metabase:
+    container_name: seed_metabase
+    build:
+      context: ./seed
+      dockerfile: Dockerfile
+    command: ["python3", "seed_metabase.py"]
+    environment:
+      POSTGRES_HOST: postgresql
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: metabase
+    depends_on:
+      metabase:
+        condition: service_started
+    networks:
+      - app_net
+    restart: "no"
+
 networks:
   app_net:
     ipam:

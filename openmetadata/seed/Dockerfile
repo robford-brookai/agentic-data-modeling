@@ -12,7 +12,10 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy seed script
+# Copy all seed scripts
 COPY seed_data.py .
+COPY seed_metabase.py .
+COPY seed_metabase.sql .
 
+# Default command (can be overridden)
 CMD ["python3", "seed_data.py"]
