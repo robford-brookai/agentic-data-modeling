@@ -58,6 +58,44 @@ services:
     volumes:
       - es-data:/usr/share/elasticsearch/data
 
+  seed-postgres:
+    container_name: seed_postgres_from_s3
+    build:
+      context: ./seed
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES_HOST: postgresql
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    networks:
+      - app_net
+    restart: "no"
+
+  dbt-run:
+    container_name: dbt_run_models
+    image: ghcr.io/dbt-labs/dbt-postgres:1.7.4
+    working_dir: /dbt
+    volumes:
+      - ../dbt:/dbt
+    environment:
+      POSTGRES_HOST: postgresql
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
+    command: ["run", "--profiles-dir", "."]
+    depends_on:
+      seed-postgres:
+        condition: service_completed_successfully
+    networks:
+      - app_net
+    restart: "no"
+
   execute-migrate-all:
     container_name: execute_migrate_all
     image: docker.getcollate.io/openmetadata/server:1.11.3
@@ -272,6 +310,10 @@ services:
         condition: service_healthy
       postgresql:
         condition: service_healthy
+      seed-postgres:
+        condition: service_completed_successfully
+      dbt-run:
+        condition: service_completed_successfully
     networks:
       - app_net
 
