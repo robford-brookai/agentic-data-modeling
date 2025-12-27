@@ -84,7 +84,7 @@ def seed_table(table_name):
 
     # Attach PostgreSQL and create table
     duck.execute(f"ATTACH '{postgres_conn_string}' AS pg (TYPE POSTGRES);")
-    duck.execute(f"DROP TABLE IF EXISTS pg.marketing.{table_name};")
+    duck.execute(f"DROP TABLE IF EXISTS pg.marketing.{table_name} CASCADE;")
     duck.execute(f"CREATE TABLE pg.marketing.{table_name} AS SELECT * FROM temp_{table_name};")
 
     # Verify
