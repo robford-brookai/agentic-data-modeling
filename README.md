@@ -59,6 +59,33 @@ This  command will:
 
 **Total:** 23 tables/views ready for metadata ingestion
 
+## Accessing Services
+
+- **OpenMetadata**: http://localhost:8585 (admin/admin)
+- **Metabase**: http://localhost:3000
+- **Airflow**: http://localhost:8080 (admin/admin)
+- **PostgreSQL**: localhost:5432
+
+### Connecting Metabase to PostgreSQL
+
+When setting up a database connection in Metabase:
+
+1. Go to http://localhost:3000 and complete initial setup
+2. Ignore `Sample Database` option and add a PostgreSQL database with these settings:
+
+```
+Host: host.docker.internal
+Port: 5432
+Database name: postgres
+Username: postgres
+Password: password
+```
+
+Select `marketing` as the schema to connect to.
+
+**Important**: Use `host.docker.internal` as the host (not `localhost` or `postgresql`) because Metabase runs inside Docker and needs to access the PostgreSQL container.
+
+
 ## What You Get
 
 **23 ready-to-query tables** in your local PostgreSQL database:
