@@ -64,19 +64,11 @@ This command will automatically:
 ## Accessing Services
 
 - **OpenMetadata**: http://localhost:8585 (admin/admin)
-- **Metabase**: http://localhost:3000
+- **Metabase**: http://localhost:3000 *
 - **Airflow**: http://localhost:8080 (admin/admin)
 - **PostgreSQL**: localhost:5432
 
-### Accessing Metabase
-
-**No manual setup required!** The database connection, tables, and metadata are pre-configured.
-
-1. Visit http://localhost:3000 and complete the account creation wizard
-2. After login, you'll find:
-   - **Database connection** already configured (Agentic Modeling Demo → marketing schema)
-   - **23 tables** with full metadata already discovered
-   - **Custom dashboard** ready to explore
+* Check http://localhost:3000dashboard/2-agentic-modeling-demo for the project dashboard
 
 The seeder automatically triggers schema sync via Metabase API to populate table metadata immediately.
 
