@@ -25,6 +25,3 @@ POSTGRES_CONFIG = {
     'password': os.environ.get('POSTGRES_PASSWORD', 'password'),
     'database': os.environ.get('POSTGRES_DB', 'postgres')
 }
-
-# Metabase API configuration
-METABASE_URL = os.environ.get('METABASE_URL', 'http://metabase:3000')

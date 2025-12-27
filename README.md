@@ -56,7 +56,7 @@ docker compose up -d
 This command will automatically:
 1. Start PostgreSQL and load 148K rows from public S3 bucket
 2. Run dbt to create 17 analytics models (staging, intermediate, marts)
-3. Start Metabase and pre-configure database connection + metadata
+3. Start Metabase at http://localhost:3000
 4. Start OpenMetadata at http://localhost:8585
 
 **Total:** 23 tables/views ready to query - no manual database setup required!
@@ -64,11 +64,20 @@ This command will automatically:
 ## Accessing Services
 
 - **OpenMetadata**: http://localhost:8585 (admin/admin)
-- **Metabase**: http://localhost:3000 *
+- **Metabase**: http://localhost:3000
 - **Airflow**: http://localhost:8080 (admin/admin)
 - **PostgreSQL**: localhost:5432
 
-* Check http://localhost:3000dashboard/2-agentic-modeling-demo for the project dashboard
+### Setting up Metabase
+
+1. Complete the setup wizard at <http://localhost:3000> (create admin user)
+2. Load pre-configured database connection and dashboard:
+
+   ```bash
+   docker compose up seed-metabase
+   ```
+
+3. Visit the [Agentic Modeling Demo Dashboard](http://localhost:3000/dashboard/2-agentic-modeling-demo)
 
 The seeder automatically triggers schema sync via Metabase API to populate table metadata immediately.
 
@@ -95,14 +104,14 @@ claude mcp add-json "openmetadata" '{
 Get your Personal Access Token from: **Settings > Users > Access Tokens**
 
 Then ask Claude questions like:
+
 - "What tables feed into campaign_performance?"
 - "Show me the schema for user_journey"
 - "Explain the data lineage from sessions to conversions"
 
-
 ## Project Structure
 
-```
+```text
 .
 ├── dbt/                           # dbt project
 │   ├── models/
