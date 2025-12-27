@@ -13,9 +13,10 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy all seed scripts
-COPY seed_data.py .
-COPY seed_metabase.py .
-COPY seed_metabase.sql .
+COPY config.py .
+COPY s3.py .
+COPY metabase.py .
+COPY metabase.sql .
 
 # Default command (can be overridden)
-CMD ["python3", "seed_data.py"]
+CMD ["python3", "s3.py"]

@@ -6,26 +6,7 @@ Reads Parquet files from s3://synthetic-data-lakehouse/marketing/ and loads into
 import duckdb
 import psycopg2
 import sys
-
-# Configuration (hardcoded to match docker-compose postgres service)
-S3_BUCKET = "s3://synthetic-data-lakehouse/marketing"
-POSTGRES_CONFIG = {
-    'host': 'postgresql',
-    'port': 5432,
-    'user': 'postgres',
-    'password': 'password',
-    'database': 'postgres'
-}
-
-# Tables to seed (matching dbt sources.yml)
-TABLES = [
-    'campaigns_daily',
-    'ad_creatives',
-    'sessions',
-    'attribution_touchpoints',
-    'conversions',
-    'metadata_snapshots'
-]
+from config import S3_BUCKET, TABLES, POSTGRES_CONFIG
 
 
 def create_schema():

@@ -61,7 +61,7 @@ services:
   seed-postgres:
     container_name: seed_postgres_from_s3
     build:
-      context: ./seed
+      context: ../seed
       dockerfile: Dockerfile
     environment:
       POSTGRES_HOST: postgresql
@@ -622,9 +622,9 @@ services:
   seed-metabase:
     container_name: seed_metabase
     build:
-      context: ./seed
+      context: ../seed
       dockerfile: Dockerfile
-    command: ["python3", "seed_metabase.py"]
+    command: ["python3", "metabase.py"]
     environment:
       POSTGRES_HOST: postgresql
       POSTGRES_PORT: 5432

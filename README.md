@@ -3,6 +3,7 @@
 A complete, self-contained data analytics stack that automatically:
 - Seeds marketing data from S3 into local PostgreSQL
 - Runs dbt transformations to create analytics models
+- Configures Metabase with pre-loaded database connections and metadata
 - Provides unified metadata management via OpenMetadata
 - Enables AI-powered data exploration through Claude
 
@@ -49,16 +50,16 @@ This setup enables a complete data analytics workflow where:
 
 ```bash
 cd openmetadata
-docker compose -f docker-compose-postgres.yml up -d
+docker compose up -d
 ```
 
-This  command will:
+This command will automatically:
 1. Start PostgreSQL and load 148K rows from public S3 bucket
 2. Run dbt to create 17 analytics models (staging, intermediate, marts)
-3. Start OpenMetadata at http://localhost:8585
-4. Visit Metabase main dashboard at http://localhost:3000/dashboard/2-agentic-modeling-demo
+3. Start Metabase and pre-configure database connection + metadata
+4. Start OpenMetadata at http://localhost:8585
 
-**Total:** 23 tables/views ready for metadata ingestion
+**Total:** 23 tables/views ready to query - no manual database setup required!
 
 ## Accessing Services
 
@@ -67,34 +68,17 @@ This  command will:
 - **Airflow**: http://localhost:8080 (admin/admin)
 - **PostgreSQL**: localhost:5432
 
-### Connecting Metabase to PostgreSQL
+### Accessing Metabase
 
-When setting up a database connection in Metabase:
+**No manual setup required!** The database connection, tables, and metadata are pre-configured.
 
-1. Go to http://localhost:3000 and complete initial setup
-2. Ignore `Sample Database` option and add a PostgreSQL database with these settings:
+1. Visit http://localhost:3000 and complete the account creation wizard
+2. After login, you'll find:
+   - **Database connection** already configured (Agentic Modeling Demo → marketing schema)
+   - **23 tables** with full metadata already discovered
+   - **Custom dashboard** ready to explore
 
-```
-Host: host.docker.internal
-Port: 5432
-Database name: postgres
-Username: postgres
-Password: password
-```
-
-Select `marketing` as the schema to connect to.
-
-**Important**:
-- Use `host.docker.internal` as the host (not `localhost` or `postgresql`) because Metabase runs inside Docker and needs to access the PostgreSQL container
-- The seeder will automatically trigger a schema sync via Metabase API to populate table metadata immediately
-
-## What You Get
-
-**23 ready-to-query tables** in your local PostgreSQL database:
-
-- 6 raw marketing tables (148K rows from S3)
-- 17 analytics models (automatically transformed)
-- All indexed in OpenMetadata with full lineage
+The seeder automatically triggers schema sync via Metabase API to populate table metadata immediately.
 
 ## AI Integration with Claude
 
@@ -136,10 +120,13 @@ Then ask Claude questions like:
 │   ├── dbt_project.yml
 │   └── profiles.yml               # Postgres connection
 ├── openmetadata/
-│   ├── docker-compose-postgres.yml 
-│   └── seed/                       # S3 → Postgres seeding
-│       ├── Dockerfile              
-│       ├── requirements.txt        
-│       └── seed_data.py            
+│   └── docker-compose.yml
+├── seed/                           # Data seeding scripts
+│   ├── Dockerfile
+│   ├── config.py                   # Shared configuration
+│   ├── requirements.txt
+│   ├── s3.py                       # S3 → PostgreSQL seeder
+│   ├── metabase.py                 # Metabase pre-configuration
+│   └── metabase.sql                # Metabase seed data
 └── README.md
 ```
