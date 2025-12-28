@@ -1,8 +1,11 @@
-# Agentic Data Modeling Project
+# Agentic Data Modeling with OpenMetadata
 
-## Overview
-
-This project demonstrates a modern data analytics stack with unified metadata management and AI-powered querying capabilities. The architecture integrates multiple tools to create a seamless data pipeline from source to insights.
+A complete, self-contained data analytics stack that automatically:
+- Seeds marketing data from S3 into local PostgreSQL
+- Runs dbt transformations to create analytics models
+- Configures Metabase with pre-loaded database connections and metadata
+- Provides unified metadata management via OpenMetadata
+- Enables AI-powered data exploration through Claude
 
 ### Unified Metadata with OpenMetadata
 
@@ -41,73 +44,56 @@ This setup enables a complete data analytics workflow where:
 4. OpenMetadata centralizes metadata from all components, providing unified lineage and metadata views
 5. Claude MCP Server allows AI-powered exploration and querying of the metadata through natural language
 
-## Prerequisites
+## Quick Start
 
-- Python 3.11+ (for dbt)
-- Node.js (for Claude MCP server)
-- Docker and Docker Compose (for OpenMetadata)
-- [Claude Code CLI](https://claude.ai/code)
-
-## Setup
-
-### 1. OpenMetadata Setup
-
-OpenMetadata is hosted locally and provides a unified metadata platform. The docker-compose configuration file (`docker-compose-postgres.yml`) was obtained from the [official OpenMetadata website](https://docs.open-metadata.org/latest/quick-start/local-docker-deployment/).
-
-To get started:
-1. Download the docker-compose file from the [OpenMetadata documentation](https://docs.open-metadata.org/deployment/docker)
-2. Place it in the `openmetadata/` directory
-3. Start OpenMetadata using Docker Compose:
+**Requirements:** Docker & Docker Compose
 
 ```bash
 cd openmetadata
-docker-compose -f docker-compose-postgres.yml up -d
+docker compose up -d
 ```
 
-Ensure OpenMetadata is running on `http://localhost:8585` before proceeding with other setup steps.
+This command will automatically:
+1. Start PostgreSQL and load 148K rows from public S3 bucket
+2. Run dbt to create 17 analytics models (staging, intermediate, marts)
+3. Start Metabase at http://localhost:3000
+4. Start OpenMetadata at http://localhost:8585
 
-### 2. dbt Setup
+**Total:** 23 tables/views ready to query - no manual database setup required!
 
-dbt is used for data transformation and is configured to work with PostgreSQL database:
+## Accessing Services
 
-```bash
-python3 -m venv venv
-source venv/bin/activate
-cd dbt
-pip install -r requirements.txt
-```
+- **OpenMetadata**: http://localhost:8585 (admin/admin)
+- **Metabase**: http://localhost:3000
+- **Airflow**: http://localhost:8080 (admin/admin)
+- **PostgreSQL**: localhost:5432
 
-Then run your dbt models:
+### Setting up Metabase
 
-```bash
-dbt run
-dbt docs generate
-```
-### 3. Integrate with Claude Code 
+1. Complete the setup wizard at <http://localhost:3000> (create admin user)
+2. Load pre-configured database connection and dashboard:
 
-The Claude MCP (Model Context Protocol) server enables AI-powered interaction with your metadata. You can ask questions about your data models, schemas, and relationships using natural language.
+   ```bash
+   docker compose up seed-metabase
+   ```
 
-#### Steps to Connect:
+3. Visit the [Agentic Modeling Demo Dashboard](http://localhost:3000/dashboard/2-agentic-modeling-demo)
 
-1. **Generate a Personal Access Token (PAT) in OpenMetadata:**
-   - Navigate to **Settings > Users > [Your User] > Access Tokens**
-   - Create a new token and copy it
+The seeder automatically triggers schema sync via Metabase API to populate table metadata immediately.
 
-2. **Add the MCP server to Claude Code:**
+## AI Integration with Claude
+
+Connect Claude to your metadata using the OpenMetadata MCP Server:
 
 ```bash
 claude mcp add-json "openmetadata" '{
   "command": "npx",
   "args": [
-    "-y",
-    "mcp-remote",
+    "-y", "mcp-remote",
     "http://localhost:8585/mcp",
     "--auth-server-url=http://localhost:8585/mcp",
     "--client-id=openmetadata",
-    "--verbose",
-    "--clean",
-    "--header",
-    "Authorization:${AUTH_HEADER}"
+    "--header", "Authorization:${AUTH_HEADER}"
   ],
   "env": {
     "AUTH_HEADER": "Bearer <YOUR-OPENMETADATA-PAT>"
@@ -115,28 +101,33 @@ claude mcp add-json "openmetadata" '{
 }'
 ```
 
-   Replace `<YOUR-OPENMETADATA-PAT>` with your actual Personal Access Token.
+Get your Personal Access Token from: **Settings > Users > Access Tokens**
 
-3. **Restart Claude Code** and verify the connection with `/mcp`
+Then ask Claude questions like:
 
-4. **Start Querying**: Once connected, you can ask Claude questions like:
-   - "What tables are in my database?"
-   - "Show me the relationships between my dbt models"
-   - "What are the column descriptions for the user_journey table?"
-   - "Explain the data lineage for campaign_performance"
+- "What tables feed into campaign_performance?"
+- "Show me the schema for user_journey"
+- "Explain the data lineage from sessions to conversions"
 
 ## Project Structure
 
-```
+```text
 .
-├── dbt/                    # dbt project for data transformation
+├── dbt/                           # dbt project
 │   ├── models/
-│   │   ├── staging/       # Staging models (raw data)
-│   │   ├── intermediate/  # Intermediate transformations
-│   │   └── marts/         # Final business-ready models
-│   └── dbt_project.yml
-├── openmetadata/          # OpenMetadata configuration
-│   └── docker-compose-postgres.yml
+│   │   ├── staging/               
+│   │   ├── intermediate/          
+│   │   └── marts/                 
+│   ├── dbt_project.yml
+│   └── profiles.yml               # Postgres connection
+├── openmetadata/
+│   └── docker-compose.yml
+├── seed/                           # Data seeding scripts
+│   ├── Dockerfile
+│   ├── config.py                   # Shared configuration
+│   ├── requirements.txt
+│   ├── s3.py                       # S3 → PostgreSQL seeder
+│   ├── metabase.py                 # Metabase pre-configuration
+│   └── metabase.sql                # Metabase seed data
 └── README.md
 ```
-
