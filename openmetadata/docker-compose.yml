@@ -694,6 +694,7 @@ services:
       - app_net
 
   seed-metabase:
+    profiles: ["manual"]
     container_name: seed_metabase
     build:
       context: ../seed
