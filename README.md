@@ -50,151 +50,46 @@ This setup enables a complete data analytics workflow where:
 
 **Requirements:** Docker & Docker Compose
 
-### Step 1: Start the Main Stack
-
 ```bash
 cd openmetadata
 docker compose up -d
 ```
 
-This command will automatically:
-1. Start PostgreSQL and load 148K rows from public S3 bucket
-2. Run dbt to create 17 analytics models (staging, intermediate, marts)
-3. Start Metabase at http://localhost:3000
-4. Start OpenMetadata at http://localhost:8585
+This starts:
+- PostgreSQL with 148K rows from S3
+- dbt (17 analytics models)
+- Metabase (http://localhost:3000) (your credentials)
+- OpenMetadata (http://localhost:8585) (admin@open-metadata.org/admin)
+- Airflow (http://localhost:8080) (admin/admin)
 
-**Total:** 23 tables/views ready to query - no manual database setup required!
+**Total:** 23 tables/views ready to query!
 
-### Step 2: Configure Environment Variables
+### Metabase Setup
 
-Before running ingestion, set up your environment variables. Create `openmetadata/.env`:
+1. Complete setup wizard to create your user at http://localhost:3000
+2. Save your email and password on the `.env` variables `METABASE_USERNAME` and `METABASE_PASSWORD`
+3. Load pre-configured dashboard: `docker compose up seed-metabase`
+4. Visit http://localhost:3000/dashboard/2-agentic-modeling-demo
 
-```bash
-OPENMETADATA_JWT_TOKEN=your_jwt_token_here
-METABASE_USERNAME=your_metabase_username
-METABASE_PASSWORD=your_metabase_password
-```
+### OpenMetadata Ingestion
 
-**Getting your JWT Token:**
-1. Wait for OpenMetadata to start (check http://localhost:8585)
-2. Login with admin/admin
-3. Go to **Settings → Users → Access Tokens**
-4. Create a new token and copy it to your `.env` file
+**1. Get JWT Token:**
+- Login at http://localhost:8585 (admin/admin)
+- Follow this [link](http://localhost:8585/users/admin/access-token) to create your Access Token
+- Create token and save to on the `.env` variable `OPENMETADATA_JWT_TOKEN`:
 
-### Step 3: Run Metadata Ingestion
-
-Once the main stack is running and you've set your environment variables, run the ingestion services:
-
-```bash
-# Run all ingestion services
-docker compose --profile ingestion up ingest-postgres ingest-dbt ingest-metabase
-
-# Or run them individually
-docker compose --profile ingestion up ingest-postgres
-docker compose --profile ingestion up ingest-dbt
-docker compose --profile ingestion up ingest-metabase
-```
-
-The ingestion services will:
-1. **PostgreSQL ingestion**: Ingest database tables and schemas into OpenMetadata
-2. **dbt ingestion**: Ingest dbt models, lineage, and transformations (runs after PostgreSQL ingestion)
-3. **Metabase ingestion**: Ingest Metabase dashboards and charts (runs after Metabase is configured)
-
-
-## Accessing Services
-
-- **OpenMetadata**: http://localhost:8585 (admin@open-metadata.org/admin)
-- **Metabase**: http://localhost:3000 (username/password that you created)
-- **Airflow**: http://localhost:8080 (admin/admin)
-- **PostgreSQL**: localhost:5432
-
-## Ingestion Configuration
-
-All metadata ingestion is configured using **YAML files** instead of the OpenMetadata UI. This approach provides:
-
-- **Version Control**: All configurations are stored in Git
-- **Reproducibility**: Easy to recreate the same setup anywhere
-- **Infrastructure as Code**: Manage metadata ingestion like any other infrastructure
-- **Selective Execution**: Use Docker Compose profiles to run ingestion on-demand
-
-While you can configure ingestion through the OpenMetadata UI, this project uses YAML-based configuration for better DevOps practices.
-
-### Running Ingestion
-
-Ingestion services use Docker Compose profiles and are **not** started automatically. This allows you to:
-- Control when ingestion runs
-- Re-run ingestion after making changes
-- Run specific ingestion services independently
-
-**Run all ingestion services:**
+**2. Run ingestion:**
 ```bash
 docker compose --profile ingestion up ingest-postgres ingest-dbt ingest-metabase
 ```
 
-**Run services individually:**
-```bash
-# 1. PostgreSQL ingestion (must run first)
-docker compose --profile ingestion up ingest-postgres
+**What gets ingested on `openmetadata/ingestion-configs/`:**
+- **PostgreSQL**: Tables and schemas from `marketing` schema → creates `marketing_postgres` service
+- **dbt**: Models and lineage → links to PostgreSQL service (run after PostgreSQL ingestion)
+- **Metabase**: Dashboards and charts → completes full lineage: tables → dbt → dashboards
 
-# 2. dbt ingestion (depends on PostgreSQL ingestion)
-docker compose --profile ingestion up ingest-dbt
 
-# 3. Metabase ingestion (depends on Metabase being configured)
-docker compose --profile ingestion up ingest-metabase
-```
-
-The ingestion services automatically:
-- Wait for OpenMetadata server to be ready
-- Substitute environment variables in YAML configs
-- Execute in the correct dependency order
-
-### Ingestion Configurations
-
-The project includes three YAML-based ingestion configurations:
-
-1. **PostgreSQL Ingestion** (`openmetadata/ingestion-configs/postgres_ingestion.yaml`)
-   - Ingests database tables and schemas from PostgreSQL
-   - Creates `marketing_postgres` service in OpenMetadata
-   - Filters to `marketing` schema using regex pattern
-
-2. **dbt Ingestion** (`openmetadata/ingestion-configs/dbt_ingestion.yaml`)
-   - Ingests dbt models, lineage, and transformations
-   - Links dbt models to the PostgreSQL database service
-   - Creates data lineage from source tables → dbt models
-   - Requires PostgreSQL ingestion to complete first
-
-3. **Metabase Ingestion** (`openmetadata/ingestion-configs/metabase_ingestion.yaml`)
-   - Ingests Metabase dashboards and charts
-   - Links dashboards to underlying database tables
-   - Completes end-to-end lineage: tables → dbt → dashboards
-   - Requires Metabase to be configured and running
-
-### Environment Variables
-
-The ingestion YAML files use environment variable substitution. Set these in `openmetadata/.env`:
-
-```bash
-OPENMETADATA_JWT_TOKEN=your_jwt_token_here
-METABASE_USERNAME=your_metabase_username
-METABASE_PASSWORD=your_metabase_password
-```
-
-The ingestion services automatically substitute these values into the YAML configs before running.
-
-### Setting up Metabase
-
-1. Complete the setup wizard at <http://localhost:3000> (create admin user)
-2. Load pre-configured database connection and dashboard:
-
-   ```bash
-   docker compose up seed-metabase
-   ```
-
-3. Visit the [Agentic Modeling Demo Dashboard](http://localhost:3000/dashboard/2-agentic-modeling-demo)
-
-The seeder automatically triggers schema sync via Metabase API to populate table metadata immediately.
-
-## AI Integration with Claude
+## AI Integration with OpenMetadata MCP with Claude Code
 
 Connect Claude to your metadata using the OpenMetadata MCP Server:
 
@@ -209,15 +104,16 @@ claude mcp add-json "openmetadata" '{
     "--header", "Authorization:${AUTH_HEADER}"
   ],
   "env": {
-    "AUTH_HEADER": "Bearer <YOUR-OPENMETADATA-PAT>"
+    "AUTH_HEADER": "Bearer <OPENMETADATA_JWT_TOKEN>"
   }
 }'
 ```
 
-Get your Personal Access Token from: **Settings > Users > Access Tokens**
+Pass the value of `OPENMETADATA_JWT_TOKEN` you got on OpenMetadata settings. 
 
 Then ask Claude questions like:
 
+- "Can you do an impact on analysis on changing the column `total_conversions` name?"
 - "What tables feed into campaign_performance?"
 - "Show me the schema for user_journey"
 - "Explain the data lineage from sessions to conversions"
@@ -239,7 +135,6 @@ Then ask Claude questions like:
 │       ├── postgres_ingestion.yaml
 │       ├── dbt_ingestion.yaml
 │       ├── metabase_ingestion.yaml
-docs
 ├── seed/                           # Data seeding scripts
 │   ├── Dockerfile
 │   ├── config.py                   # Shared configuration
