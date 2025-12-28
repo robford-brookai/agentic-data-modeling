@@ -1,0 +1,24 @@
+source:
+  type: dbt
+  serviceName: marketing_postgres
+  sourceConfig:
+    config:
+      type: DBT
+      dbtConfigSource:
+        dbtConfigType: local
+        dbtManifestFilePath: /opt/openmetadata/dbt/target/manifest.json
+        dbtCatalogFilePath: /opt/openmetadata/dbt/target/catalog.json
+        dbtRunResultsFilePath: /opt/openmetadata/dbt/target/run_results.json
+      dbtUpdateDescriptions: true
+      includeTags: true
+
+sink:
+  type: metadata-rest
+  config: {}
+
+workflowConfig:
+  openMetadataServerConfig:
+    hostPort: http://openmetadata-server:8585/api
+    authProvider: openmetadata
+    securityConfig:
+      jwtToken: ${OPENMETADATA_JWT_TOKEN}
