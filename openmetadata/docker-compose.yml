@@ -79,6 +79,7 @@ services:
   dbt-run:
     container_name: dbt_run_models
     image: ghcr.io/dbt-labs/dbt-postgres:1.7.4
+    platform: linux/amd64
     working_dir: /dbt
     volumes:
       - ../dbt:/dbt
@@ -88,10 +89,82 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: postgres
-    command: ["run", "--profiles-dir", "."]
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        dbt compile --profiles-dir . || true
+        dbt run --profiles-dir .
+        dbt docs generate --profiles-dir . || true
     depends_on:
       seed-postgres:
         condition: service_completed_successfully
+    networks:
+      - app_net
+    restart: "no"
+
+  ingest-postgres:
+    profiles: ["ingestion"]
+    container_name: ingest_postgres_metadata
+    image: docker.getcollate.io/openmetadata/ingestion:1.11.3
+    volumes:
+      - ./ingestion-configs:/opt/airflow/ingestion-configs
+    environment:
+      OPENMETADATA_JWT_TOKEN: ${OPENMETADATA_JWT_TOKEN:-}
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        echo "Waiting for OpenMetadata server to be ready..."
+        for i in {1..30}; do
+          if python3 -c "import urllib.request; urllib.request.urlopen('http://openmetadata-server:8585/api/v1/system/version', timeout=5)" 2>/dev/null; then
+            echo "OpenMetadata server is ready!"
+            break
+          fi
+          echo "Waiting for OpenMetadata server... (attempt $$i/30)"
+          sleep 5
+        done
+        echo "Starting PostgreSQL ingestion..."
+        python3 -c "import os, sys; sys.stdout.write(open('/opt/airflow/ingestion-configs/postgres_ingestion.yaml').read().replace('\${OPENMETADATA_JWT_TOKEN}', os.environ.get('OPENMETADATA_JWT_TOKEN', '')))" > /tmp/postgres_ingestion.yaml
+        metadata ingest -c /tmp/postgres_ingestion.yaml
+    depends_on:
+      seed-postgres:
+        condition: service_completed_successfully
+      openmetadata-server:
+        condition: service_started
+    networks:
+      - app_net
+    restart: "no"
+
+  ingest-dbt:
+    profiles: ["ingestion"]
+    container_name: ingest_dbt_metadata
+    image: docker.getcollate.io/openmetadata/ingestion:1.11.3
+    volumes:
+      - ./ingestion-configs:/opt/airflow/ingestion-configs
+      - ../dbt:/opt/openmetadata/dbt:ro
+    environment:
+      OPENMETADATA_JWT_TOKEN: ${OPENMETADATA_JWT_TOKEN:-}
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        echo "Waiting for OpenMetadata server to be ready..."
+        for i in {1..30}; do
+          if python3 -c "import urllib.request; urllib.request.urlopen('http://openmetadata-server:8585/api/v1/system/version', timeout=5)" 2>/dev/null; then
+            echo "OpenMetadata server is ready!"
+            break
+          fi
+          echo "Waiting for OpenMetadata server... (attempt $$i/30)"
+          sleep 5
+        done
+        echo "Starting dbt ingestion..."
+        python3 -c "import os, sys; sys.stdout.write(open('/opt/airflow/ingestion-configs/dbt_ingestion.yaml').read().replace('\${OPENMETADATA_JWT_TOKEN}', os.environ.get('OPENMETADATA_JWT_TOKEN', '')))" > /tmp/dbt_ingestion.yaml
+        metadata ingest -c /tmp/dbt_ingestion.yaml
+    depends_on:
+      dbt-run:
+        condition: service_completed_successfully
+      ingest-postgres:
+        condition: service_completed_successfully
+      openmetadata-server:
+        condition: service_started
     networks:
       - app_net
     restart: "no"
@@ -576,6 +649,7 @@ services:
       - ingestion-volume-dags:/opt/airflow/dags
       - ingestion-volume-tmp:/tmp
       - ../dbt:/opt/openmetadata/dbt:ro
+      - ./ingestion-configs:/opt/airflow/ingestion-configs
 
   init-metabase-db:
     container_name: init_metabase_db
@@ -633,6 +707,49 @@ services:
       POSTGRES_DB: metabase
     depends_on:
       metabase:
+        condition: service_started
+    networks:
+      - app_net
+    restart: "no"
+
+  ingest-metabase:
+    profiles: ["ingestion"]
+    container_name: ingest_metabase_metadata
+    image: docker.getcollate.io/openmetadata/ingestion:1.11.3
+    volumes:
+      - ./ingestion-configs:/opt/airflow/ingestion-configs
+    environment:
+      OPENMETADATA_JWT_TOKEN: ${OPENMETADATA_JWT_TOKEN:-}
+      METABASE_USERNAME: ${METABASE_USERNAME:-admin}
+      METABASE_PASSWORD: ${METABASE_PASSWORD:-admin}
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        echo "Waiting for OpenMetadata server to be ready..."
+        for i in {1..30}; do
+          if python3 -c "import urllib.request; urllib.request.urlopen('http://openmetadata-server:8585/api/v1/system/version', timeout=5)" 2>/dev/null; then
+            echo "OpenMetadata server is ready!"
+            break
+          fi
+          echo "Waiting for OpenMetadata server... (attempt $$i/30)"
+          sleep 5
+        done
+        echo "Waiting for Metabase to be ready..."
+        for i in {1..30}; do
+          if python3 -c "import urllib.request; urllib.request.urlopen('http://metabase:3000/api/health', timeout=5)" 2>/dev/null; then
+            echo "Metabase is ready!"
+            break
+          fi
+          echo "Waiting for Metabase... (attempt $$i/30)"
+          sleep 5
+        done
+        echo "Starting Metabase ingestion..."
+        python3 -c "import os, sys; content = open('/opt/airflow/ingestion-configs/metabase_ingestion.yaml').read(); content = content.replace('\${OPENMETADATA_JWT_TOKEN}', os.environ.get('OPENMETADATA_JWT_TOKEN', '')); content = content.replace('\${METABASE_USERNAME}', os.environ.get('METABASE_USERNAME', 'admin')); content = content.replace('\${METABASE_PASSWORD}', os.environ.get('METABASE_PASSWORD', 'admin')); sys.stdout.write(content)" > /tmp/metabase_ingestion.yaml
+        metadata ingest -c /tmp/metabase_ingestion.yaml
+    depends_on:
+      seed-metabase:
+        condition: service_completed_successfully
+      openmetadata-server:
         condition: service_started
     networks:
       - app_net
