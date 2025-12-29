@@ -41,8 +41,10 @@ This setup enables a complete data analytics workflow where:
 1. Raw data flows from PostgreSQL
 2. dbt transforms and models the data locally
 3. Metabase provides interactive dashboards
-4. OpenMetadata centralizes metadata from all components, providing unified lineage and metadata views
+4. OpenMetadata centralizes metadata from all components via **YAML-based ingestion** (not UI), providing unified lineage and metadata views
 5. Claude MCP Server allows AI-powered exploration and querying of the metadata through natural language
+
+**Key Feature:** All OpenMetadata ingestion is configured through YAML files, enabling Infrastructure as Code (IaC) practices. Ingestion runs on-demand using Docker Compose profiles, giving you control over when metadata is synchronized. While OpenMetadata provides a UI for configuration, this project uses YAML files for version control, automation, and reproducibility.
 
 ## Quick Start
 
@@ -53,35 +55,41 @@ cd openmetadata
 docker compose up -d
 ```
 
-This command will automatically:
-1. Start PostgreSQL and load 148K rows from public S3 bucket
-2. Run dbt to create 17 analytics models (staging, intermediate, marts)
-3. Start Metabase at http://localhost:3000
-4. Start OpenMetadata at http://localhost:8585
+This starts:
+- PostgreSQL with 148K rows from S3
+- dbt (17 analytics models)
+- Metabase (http://localhost:3000) (your credentials)
+- OpenMetadata (http://localhost:8585) (admin@open-metadata.org/admin)
+- Airflow (http://localhost:8080) (admin/admin)
 
-**Total:** 23 tables/views ready to query - no manual database setup required!
+**Total:** 23 tables/views ready to query!
 
-## Accessing Services
+### Metabase Setup
 
-- **OpenMetadata**: http://localhost:8585 (admin/admin)
-- **Metabase**: http://localhost:3000
-- **Airflow**: http://localhost:8080 (admin/admin)
-- **PostgreSQL**: localhost:5432
+1. Complete setup wizard to create your user at http://localhost:3000
+2. Save your email and password on the `.env` variables `METABASE_USERNAME` and `METABASE_PASSWORD`
+3. Load pre-configured dashboard: `docker compose up seed-metabase`
+4. Visit http://localhost:3000/dashboard/2-agentic-modeling-demo
 
-### Setting up Metabase
+### OpenMetadata Ingestion
 
-1. Complete the setup wizard at <http://localhost:3000> (create admin user)
-2. Load pre-configured database connection and dashboard:
+**1. Get JWT Token:**
+- Login at http://localhost:8585 (admin/admin)
+- Follow this [link](http://localhost:8585/users/admin/access-token) to create your Access Token
+- Create token and save to on the `.env` variable `OPENMETADATA_JWT_TOKEN`:
 
-   ```bash
-   docker compose up seed-metabase
-   ```
+**2. Run ingestion:**
+```bash
+docker compose --profile ingestion up ingest-postgres ingest-dbt ingest-metabase
+```
 
-3. Visit the [Agentic Modeling Demo Dashboard](http://localhost:3000/dashboard/2-agentic-modeling-demo)
+**What gets ingested on `openmetadata/ingestion-configs/`:**
+- **PostgreSQL**: Tables and schemas from `marketing` schema → creates `marketing_postgres` service
+- **dbt**: Models and lineage → links to PostgreSQL service (run after PostgreSQL ingestion)
+- **Metabase**: Dashboards and charts → completes full lineage: tables → dbt → dashboards
 
-The seeder automatically triggers schema sync via Metabase API to populate table metadata immediately.
 
-## AI Integration with Claude
+## AI Integration with OpenMetadata MCP with Claude Code
 
 Connect Claude to your metadata using the OpenMetadata MCP Server:
 
@@ -96,15 +104,16 @@ claude mcp add-json "openmetadata" '{
     "--header", "Authorization:${AUTH_HEADER}"
   ],
   "env": {
-    "AUTH_HEADER": "Bearer <YOUR-OPENMETADATA-PAT>"
+    "AUTH_HEADER": "Bearer <OPENMETADATA_JWT_TOKEN>"
   }
 }'
 ```
 
-Get your Personal Access Token from: **Settings > Users > Access Tokens**
+Pass the value of `OPENMETADATA_JWT_TOKEN` you got on OpenMetadata settings. 
 
 Then ask Claude questions like:
 
+- "Can you do an impact on analysis on changing the column `total_conversions` name?"
 - "What tables feed into campaign_performance?"
 - "Show me the schema for user_journey"
 - "Explain the data lineage from sessions to conversions"
@@ -121,7 +130,11 @@ Then ask Claude questions like:
 │   ├── dbt_project.yml
 │   └── profiles.yml               # Postgres connection
 ├── openmetadata/
-│   └── docker-compose.yml
+│   ├── docker-compose.yml         # Main orchestration file
+│   └── ingestion-configs/         # YAML-based ingestion configs
+│       ├── postgres_ingestion.yaml
+│       ├── dbt_ingestion.yaml
+│       ├── metabase_ingestion.yaml
 ├── seed/                           # Data seeding scripts
 │   ├── Dockerfile
 │   ├── config.py                   # Shared configuration

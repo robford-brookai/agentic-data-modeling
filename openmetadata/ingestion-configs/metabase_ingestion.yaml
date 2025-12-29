@@ -1,0 +1,36 @@
+source:
+  type: metabase
+  serviceName: metabase_service
+  serviceConnection:
+    config:
+      type: Metabase
+      username: ${METABASE_USERNAME}
+      password: ${METABASE_PASSWORD}
+      hostPort: http://metabase:3000
+  sourceConfig:
+    config:
+      dashboardFilterPattern:
+        includes: []
+        excludes: []
+      chartFilterPattern:
+        includes: []
+        excludes: []
+      dataModelFilterPattern:
+        includes: []
+        excludes: []
+      includeTags: true
+      includeDataModels: true
+      includeOwners: true
+      markDeletedDashboards: true
+      includeDraftDashboard: true
+
+sink:
+  type: metadata-rest
+  config: {}
+
+workflowConfig:
+  openMetadataServerConfig:
+    hostPort: http://openmetadata-server:8585/api
+    authProvider: openmetadata
+    securityConfig:
+      jwtToken: ${OPENMETADATA_JWT_TOKEN}

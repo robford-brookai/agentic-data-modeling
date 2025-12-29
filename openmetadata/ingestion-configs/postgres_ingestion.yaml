@@ -1,0 +1,31 @@
+source:
+  type: postgres
+  serviceName: marketing_postgres
+  serviceConnection:
+    config:
+      type: Postgres
+      username: postgres
+      authType:
+        password: password
+      hostPort: postgresql:5432
+      database: postgres
+  sourceConfig:
+    config:
+      type: DatabaseMetadata
+      markDeletedTables: true
+      includeTables: true
+      includeViews: true
+      schemaFilterPattern:
+        includes:
+          - ".*marketing.*"
+
+sink:
+  type: metadata-rest
+  config: {}
+
+workflowConfig:
+  openMetadataServerConfig:
+    hostPort: http://openmetadata-server:8585/api
+    authProvider: openmetadata
+    securityConfig:
+      jwtToken: ${OPENMETADATA_JWT_TOKEN}
