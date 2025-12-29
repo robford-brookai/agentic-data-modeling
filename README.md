@@ -6,7 +6,6 @@ A complete, self-contained data analytics stack that automatically:
 - Configures Metabase with pre-loaded database connections and metadata
 - Provides unified metadata management via OpenMetadata
 - Enables AI-powered data exploration through Claude
-
 ### Unified Metadata with OpenMetadata
 
 **OpenMetadata** serves as a unified metadata platform that easily connects different parts of the data engineering cycle. It acts as a central hub to:
@@ -15,7 +14,7 @@ A complete, self-contained data analytics stack that automatically:
 - Centralize documentation, schemas, column descriptions, and relationships
 - Track dependencies and understand the downstream impact of changes
 
-This provides a complete view of your data ecosystem, enabling you to explore metadata, view lineage, and understand dependencies across all your data assets.
+This provides a complete view of our data ecosystem, enabling you to explore metadata, view lineage, and understand dependencies across all your data assets.
 
 ### AI-Powered Metadata Exploration with Claude MCP Server
 
@@ -36,7 +35,7 @@ The MCP server bridges the gap between your metadata and AI, making it accessibl
 - **Visualisation**: [Metabase](https://www.metabase.com/) dashboards for business intelligence
 - **Metadata Management**: [OpenMetadata](https://open-metadata.org/) to unify all metadata in one platform (hosted locally)
 - **AI Integration**: Claude MCP Server to connect with metadata and enable natural language queries
-
+![Architecture](images/architecture.png)
 This setup enables a complete data analytics workflow where:
 1. Raw data flows from PostgreSQL
 2. dbt transforms and models the data locally
@@ -48,7 +47,7 @@ This setup enables a complete data analytics workflow where:
 
 ## Quick Start
 
-**Requirements:** Docker & Docker Compose
+**Requirements:** Docker and Docker Compose
 
 ```bash
 cd openmetadata
@@ -129,12 +128,14 @@ Then ask Claude questions like:
 │   │   └── marts/                 
 │   ├── dbt_project.yml
 │   └── profiles.yml               # Postgres connection
+├── images/                         # Architecture diagrams
+│   └── architecture.png
 ├── openmetadata/
 │   ├── docker-compose.yml         # Main orchestration file
 │   └── ingestion-configs/         # YAML-based ingestion configs
 │       ├── postgres_ingestion.yaml
 │       ├── dbt_ingestion.yaml
-│       ├── metabase_ingestion.yaml
+│       └── metabase_ingestion.yaml
 ├── seed/                           # Data seeding scripts
 │   ├── Dockerfile
 │   ├── config.py                   # Shared configuration
