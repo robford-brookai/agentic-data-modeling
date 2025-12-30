@@ -21,21 +21,21 @@ docker compose up -d
 This starts:
 - PostgreSQL with 148K rows from S3
 - dbt (17 analytics models)
-- Metabase (http://localhost:3000)
-- OpenMetadata (http://localhost:8585)
+- Metabase
+- OpenMetadata
 
 **Total:** 23 tables/views ready to query!
 
 ## 📊 Metabase Setup
 
-1. Complete setup wizard to create your user at http://localhost:3000
+1. Complete setup wizard to create your dummy user at `http://localhost:3000` (Continue with Sample Data)
 2. Save your email and password on the `.env` variables `METABASE_USERNAME` and `METABASE_PASSWORD`
 
 ## 📥 OpenMetadata Ingestion
 
 **1. Get JWT Token:**
-- Login at http://localhost:8585 using `admin@open-metadata.org` & `admin` as credentials
-- Follow this [link](http://localhost:8585/users/admin/access-token) to create your Access Token
+- Login at `http://localhost:8585` using `admin@open-metadata.org` & `admin` as credentials
+- Follow this `http://localhost:8585/users/admin/access-token` to create your Access Token
 - Create token and save to on the `.env` variable `OPENMETADATA_JWT_TOKEN`:
 
 ![OpenMetadata Token](images/openmetadata_token.png)
