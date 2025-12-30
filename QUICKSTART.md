@@ -4,8 +4,17 @@ A step by step guide on how to get started with this project.
 
 **Requirements:** Docker and Docker Compose
 
+1. Run `cd openmetadata && cp .env.example .env` to get your credentials file ready, you will need it later:
+
 ```bash
-cd openmetadata
+# .env
+OPENMETADATA_JWT_TOKEN=your_jwt_token_here
+METABASE_USERNAME=your_metabase_username
+METABASE_PASSWORD=your_metabase_password
+```
+
+2. Run the docker container:
+```bash
 docker compose up -d
 ```
 
@@ -14,7 +23,6 @@ This starts:
 - dbt (17 analytics models)
 - Metabase (http://localhost:3000)
 - OpenMetadata (http://localhost:8585)
-- Airflow (http://localhost:8080) (admin/admin)
 
 **Total:** 23 tables/views ready to query!
 
@@ -64,7 +72,9 @@ claude mcp add-json "openmetadata" '{
 
 Pass the value of `OPENMETADATA_JWT_TOKEN` you got on OpenMetadata settings.
 
-Then ask Claude questions like:
+> You can do this with Cursor by adding it to `mcp.json` file.
+
+Then ask questions like:
 
 - "Can you do an impact on analysis on changing the column `total_conversions` name?"
 - "What tables feed into campaign_performance?"
