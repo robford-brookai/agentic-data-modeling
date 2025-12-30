@@ -38,6 +38,8 @@ This starts:
 - Follow this [link](http://localhost:8585/users/admin/access-token) to create your Access Token
 - Create token and save to on the `.env` variable `OPENMETADATA_JWT_TOKEN`:
 
+![OpenMetadata Token](images/openmetadata_token.png)
+
 **2. Run ingestion:**
 ```bash
 docker compose --profile ingestion up ingest-postgres ingest-dbt ingest-metabase
@@ -48,7 +50,13 @@ docker compose --profile ingestion up ingest-postgres ingest-dbt ingest-metabase
 - **dbt**: Models and lineage → links to PostgreSQL service
 - **Metabase**: Dashboards and charts → completes full lineage: tables → dbt → dashboards
 
-To double check, visit the Metabase Dashboard [Agentic Data Modeling Demo Dashboard](http://localhost:3000/dashboard/2-agentic-data-modeling-demo) to verify everything works correctly
+You will see the PostgreSQL (dbt included) and Metabase assets available to explore:
+
+![OpenMetadata UI](images/openmetadata_ui.png)
+
+To double check, visit the Metabase Dashboard [Agentic Data Modeling Demo Dashboard](http://localhost:3000/dashboard/2-agentic-data-modeling-demo) to verify everything works correctly:
+
+![Metabase Dashboard](images/metabase_dashboard.png)
 
 ## 🧠 AI Integration with OpenMetadata MCP with Claude Code
 

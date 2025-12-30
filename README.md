@@ -36,6 +36,7 @@ The MCP server bridges the gap between your metadata and AI, making it accessibl
 - **Visualisation**: [Metabase](https://www.metabase.com/) dashboards for business intelligence
 - **Metadata Management**: [OpenMetadata](https://open-metadata.org/) to unify all metadata in one platform (hosted locally)
 - **AI Integration**: Claude MCP Server to connect with metadata and enable natural language queries
+
 ![Architecture](images/architecture.png)
 
 This setup enables a complete data analytics workflow where:
