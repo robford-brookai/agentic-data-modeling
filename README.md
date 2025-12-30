@@ -21,7 +21,7 @@ This provides a complete view of our data ecosystem, enabling you to explore met
 
 Once your data engineering components are connected to OpenMetadata, you can leverage the **Claude MCP (Model Context Protocol) Server** to interact with your metadata using natural language. This enables:
 
-- **Natural Language Queries**: Ask questions about your data architecture in plain English, such as "What tables feed into the campaign_performance model?" or "Show me all dashboards that use user data"
+- **Natural Language Queries**: Ask questions about your data architecture in plain English, such as "What tables feed into the `campaign_performance` model?" or "Show me all dashboards that use user data"
 - **Intelligent Exploration**: Discover relationships and dependencies without manually navigating through the UI
 - **Documentation Assistance**: Get instant answers about column meanings, data types, and business context
 - **Lineage Visualization**: Understand data flows through conversational queries rather than complex graph navigation
@@ -35,7 +35,7 @@ The MCP server bridges the gap between your metadata and AI, making it accessibl
 - **Transformation**: [dbt](https://www.getdbt.com/) for data modeling and transformation.
 - **Visualisation**: [Metabase](https://www.metabase.com/) dashboards for business intelligence
 - **Metadata Management**: [OpenMetadata](https://open-metadata.org/) to unify all metadata in one platform (hosted locally)
-- **AI Integration**: Claude MCP Server to connect with metadata and enable natural language queries
+- **AI Integration**: OpenMetadata MCP Server to connect with Claude Code or Cursor and enable natural language queries
 
 ![Architecture](images/architecture.png)
 
