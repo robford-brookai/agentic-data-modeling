@@ -30,8 +30,6 @@ This starts:
 
 1. Complete setup wizard to create your user at http://localhost:3000
 2. Save your email and password on the `.env` variables `METABASE_USERNAME` and `METABASE_PASSWORD`
-3. Load pre-configured dashboard: `docker compose up seed-metabase`
-4. Visit the [Agentic Data Modeling Demo Dashboard](http://localhost:3000/dashboard/2-agentic-modeling-demo) to verify everything works correctly
 
 ## 📥 OpenMetadata Ingestion
 
@@ -49,6 +47,8 @@ docker compose --profile ingestion up ingest-postgres ingest-dbt ingest-metabase
 - **PostgreSQL**: Tables and schemas from `marketing` schema → creates `marketing_postgres` service
 - **dbt**: Models and lineage → links to PostgreSQL service
 - **Metabase**: Dashboards and charts → completes full lineage: tables → dbt → dashboards
+
+To double check, visit the Metabase Dashboard [Agentic Data Modeling Demo Dashboard](http://localhost:3000/dashboard/2-agentic-data-modeling-demo) to verify everything works correctly
 
 ## 🧠 AI Integration with OpenMetadata MCP with Claude Code
 
