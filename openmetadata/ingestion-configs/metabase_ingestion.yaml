@@ -10,7 +10,8 @@ source:
   sourceConfig:
     config:
       dashboardFilterPattern:
-        includes: []
+        includes:
+          - ".*Agentic Data Modeling Demo.*"
         excludes: []
       chartFilterPattern:
         includes: []
@@ -22,7 +23,7 @@ source:
       includeDataModels: true
       includeOwners: true
       markDeletedDashboards: true
-      includeDraftDashboard: true
+      includeDraftDashboard: false
 
 sink:
   type: metadata-rest
