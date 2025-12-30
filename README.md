@@ -49,7 +49,6 @@ This setup enables a complete data analytics workflow where:
 **Key Feature:** All OpenMetadata ingestion is configured through YAML files, enabling Infrastructure as Code (IaC) practices. Ingestion runs on-demand using Docker Compose profiles, giving you control over when metadata is synchronized. While OpenMetadata provides a UI for configuration, this project uses YAML files for version control, automation, and reproducibility.
 
 ```text
-.
 ├── dbt/                            # dbt project
 │   ├── models/         
 │   ├── dbt_project.yml
@@ -64,4 +63,5 @@ This setup enables a complete data analytics workflow where:
 │   ├── requirements.txt
 │   └── scripts/                    # Scripts to seed Postgres and Metabase
 └── README.md
+└── QUICKSTART.md
 ```
