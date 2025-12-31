@@ -1,0 +1,17 @@
+# Code Owners for agentic-data-modeling
+# These users will be automatically requested for review when PRs are opened
+
+# Global owners - all files
+* @aboyalejandro @HopeFan
+
+# Documentation
+*.md @aboyalejandro @HopeFan
+
+# dbt models
+/dbt/** @aboyalejandro @HopeFan
+
+# OpenMetadata configuration
+/openmetadata/** @aboyalejandro @HopeFan
+
+# Seed scripts
+/seed/** @aboyalejandro @HopeFan
