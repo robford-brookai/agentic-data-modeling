@@ -17,7 +17,10 @@ By connecting Claude Code to OpenMetadata, you can ask natural language question
 
 Prerequisite: Configure Lineage in OpenMetadata
 
-![Lineage Config](images/demo_openmetadata_lineage.mp4)
+<video width="100%" controls>
+  <source src="images/demo_openmetadata_lineage.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
 **Question:** *"Can you do an impact analysis on changing the column `total_conversions` name of `campaign_performance` model?"*
 
@@ -87,6 +90,7 @@ Claude Code leverages OpenMetadata's lineage tracking to:
 4. Visualize the complete data flow
 
 ![dbt Lineage](images/demo_dbt_lineage.png)
+![dbt Lineage](images/demo_openmetadata_lineage.png)
 
 ### Result
 The `user_journey` model is built from **2 direct upstream tables**:
@@ -120,66 +124,5 @@ Claude Code queries OpenMetadata for ownership information:
 
 ![Owner Query](images/demo_claude_code_owner.png)
 
-
 ### Result
 The agent can quickly identify the dashboard owner and any associated teams or governance classifications, streamlining collaboration and accountability.
-
----
-
-## Lineage Visualization
-
-OpenMetadata provides visual lineage graphs that show the complete data flow from source tables through transformations to final dashboards:
-
-![OpenMetadata Lineage](images/demo_openmetadata_lineage.mp4)
-
-This visualization helps data teams:
-- Understand data dependencies
-- Debug data quality issues
-- Plan schema migrations
-- Document data flows for compliance
-
----
-
-## Key Benefits
-
-### For Data Engineers
-- **Instant impact analysis** before making schema changes
-- **Automated lineage tracing** without manual SQL parsing
-- **Faster debugging** by understanding data flows
-
-### For Analytics Engineers
-- **Quick validation** of what data is included in models
-- **Easy discovery** of existing assets to avoid duplication
-- **Better documentation** through automated metadata queries
-
-### For Data Analysts
-- **Self-service data discovery** without asking engineers
-- **Confidence in data sources** with full lineage visibility
-- **Clear ownership** for data governance questions
-
-### For Data Leaders
-- **Reduced production incidents** through impact analysis
-- **Faster time-to-insight** with AI-powered metadata search
-- **Better data governance** through ownership tracking
-
----
-
-## Getting Started
-
-Follow the [Quick Start Guide](QUICKSTART.md) to:
-1. Set up the demo environment with Docker
-2. Ingest metadata into OpenMetadata
-3. Connect Claude Code to the OpenMetadata MCP server
-4. Start asking questions about your data!
-
-## Example Questions to Try
-
-Once connected, try asking Claude:
-
-- "Show me all tables tagged with PII"
-- "What's the grain of the campaign_performance model?"
-- "Which dashboards will break if I delete the conversions table?"
-- "List all dbt models owned by the marketing team"
-- "What columns in the user_journey table come from attribution_touchpoints?"
-- "How many BigQuery services are connected?"
-- "Find all Tier 1 tables in the marketing database"
