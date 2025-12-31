@@ -82,9 +82,9 @@ Pass the value of `OPENMETADATA_JWT_TOKEN` you got on OpenMetadata settings.
 
 > You can do this with Cursor by adding it to `mcp.json` file.
 
-Then ask questions like:
+Then use OpenMetadata MCP Server to ask questions such as:
 
-- "Can you do an impact on analysis on changing the column `total_conversions` name?"
-- "What tables feed into campaign_performance?"
-- "Show me the schema for user_journey"
-- "Explain the data lineage from sessions to conversions"
+- "Can you do an impact on analysis on changing the column `total_conversions` name of `campaign_performance` model?"
+- "Is target revenue chart on Metabase considering TV and Radio?"
+- "What tables feed into `user_journey` model?"
+- "Who owns the Agentic Data Modeling Demo dahsboard?"
