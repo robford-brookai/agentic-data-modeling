@@ -23,8 +23,9 @@ Prerequisite: Configure Lineage in OpenMetadata
 
 ### The Challenge
 Before renaming a column in your data model, you need to understand what will break downstream. Manually tracing dependencies across dbt models, dashboards, and reports is time-consuming and error-prone.
+<details>
+  <summary> <h4>✨ Click to see Claude Code output </h4> </summary>
 
-### The Solution
 Claude Code uses the OpenMetadata MCP to:
 1. Find the `campaign_performance` model
 2. Trace its downstream lineage
@@ -42,6 +43,8 @@ This saves hours of manual investigation and prevents production incidents.
 
 > Note that Metabase integration only allows linking dashboards, so this use case is limited to that granularity level.
 
+</details>
+
 ---
 
 ## Use Case 2: Data Discovery & Validation
@@ -55,7 +58,8 @@ Prerequisite: Update the description on OpenMetadata
 ### The Challenge
 Business users often ask: "What data is included in this dashboard?" Answering requires understanding chart definitions, SQL queries, and upstream data sources.
 
-### The Solution
+<details>
+  <summary> <h4>✨ Click to see Claude Code output </h4> </summary>
 Claude Code queries OpenMetadata to:
 1. Search for the "Target Revenue" chart in Metabase
 2. Read the chart's description and metadata
@@ -70,6 +74,8 @@ Claude Code queries OpenMetadata to:
 
 The chart only uses data from the `campaigns_daily` table, which tracks digital advertising channels.
 
+</details>
+
 ---
 
 ## Use Case 3: Lineage Exploration
@@ -79,7 +85,9 @@ The chart only uses data from the `campaigns_daily` table, which tracks digital 
 ### The Challenge
 Understanding data lineage is critical for debugging, impact analysis, and data quality investigations. Manually tracing dependencies through dbt DAGs and SQL is tedious.
 
-### The Solution
+
+<details>
+  <summary> <h4>✨ Click to see Claude Code output </h4> </summary>
 Claude Code leverages OpenMetadata's lineage tracking to:
 1. Find the `user_journey` model
 2. Trace upstream dependencies through intermediate models
@@ -100,6 +108,8 @@ Which ultimately trace back to **2 source tables**:
 
 The agent provides both the immediate dependencies and the full lineage tree, making it easy to understand data provenance.
 
+</details>
+
 ---
 
 ## Use Case 4: Ownership & Governance
@@ -116,10 +126,13 @@ In large organizations, knowing who owns specific data assets is essential for:
 - Reporting data quality issues
 - Understanding compliance requirements
 
-### The Solution
+
+<details>
+  <summary> <h4>✨ Click to see Claude Code output </h4> </summary>
 Claude Code queries OpenMetadata for ownership information:
 
 ![Owner Query](images/demo_claude_code_owner.png)
 
 ### Result
 The agent can quickly identify the dashboard owner and any associated teams or governance classifications, streamlining collaboration and accountability.
+</details>
