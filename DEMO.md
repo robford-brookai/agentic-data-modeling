@@ -17,10 +17,7 @@ By connecting Claude Code to OpenMetadata, you can ask natural language question
 
 Prerequisite: Configure Lineage in OpenMetadata
 
-<video width="100%" controls>
-  <source src="images/demo_openmetadata_lineage.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+🎥 **[Watch: Configure Lineage in OpenMetadata](https://focusee.imobie.com/share/256e1b5661a74775aad7205f25f67672)**
 
 **Question:** *"Can you do an impact analysis on changing the column `total_conversions` name of `campaign_performance` model?"*
 
