@@ -15,7 +15,7 @@ By connecting Claude Code to OpenMetadata, you can ask natural language question
 
 ## Use Case 1: Impact Analysis on Schema Changes
 
-Prerequisite: Configure Lineage in OpenMetadata
+**Prerequisite**: Configure Lineage in OpenMetadata
 
 🎥 **[Watch: Configure Lineage in OpenMetadata](https://focusee.imobie.com/share/256e1b5661a74775aad7205f25f67672)**
 
@@ -49,7 +49,7 @@ This saves hours of manual investigation and prevents production incidents.
 
 ## Use Case 2: Data Discovery & Validation
 
-Prerequisite: Update the description on OpenMetadata
+**Prerequisite**: Update the description on OpenMetadata
 
 ![Target Revenue Description](images/demo_metabase_dashboard_target_revenue_description.png)
 
@@ -89,10 +89,10 @@ Understanding data lineage is critical for debugging, impact analysis, and data 
 <details>
   <summary> <h4>✨ Click to see Claude Code output </h4> </summary>
 Claude Code leverages OpenMetadata's lineage tracking to:
-1. Find the `user_journey` model
-2. Trace upstream dependencies through intermediate models
-3. Identify source tables
-4. Visualize the complete data flow
+- 1. Find the `user_journey` model
+- 2. Trace upstream dependencies through intermediate models
+- 3. Identify source tables
+- 4. Visualize the complete data flow
 
 ![dbt Lineage](images/demo_dbt_lineage.png)
 ![dbt Lineage](images/demo_openmetadata_lineage.png)
@@ -114,7 +114,7 @@ The agent provides both the immediate dependencies and the full lineage tree, ma
 
 ## Use Case 4: Ownership & Governance
 
-Prerequisite: Create a Team and update ownership of the Metabase Dashboard on OpenMetadata
+**Prerequisite**: Create a Team and update ownership of the Metabase Dashboard on OpenMetadata
 
 ![Dashboard Owner Classification](images/demo_metabase_dashboard_owner_classification.png)
 
