@@ -40,6 +40,8 @@ The agent identifies that renaming `total_conversions` will break:
 
 This saves hours of manual investigation and prevents production incidents.
 
+> Note that Metabase integration only allows linking dashboards, so this use case is limited to that granularity level.
+
 ---
 
 ## Use Case 2: Data Discovery & Validation

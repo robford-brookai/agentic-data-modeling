@@ -88,3 +88,16 @@ Then use OpenMetadata MCP Server to ask questions such as:
 - "Is target revenue chart on Metabase considering TV and Radio?"
 - "What tables feed into `user_journey` model?"
 - "Who owns the Agentic Data Modeling Demo dahsboard?"
+
+---
+
+## 📖 Next Steps
+
+**See these use cases in action!** Check out the [**Demo Documentation**](DEMO.md) for detailed walkthroughs showing:
+
+- **Impact Analysis** - How to analyze downstream effects before making schema changes
+- **Data Discovery** - Validating data sources and understanding what's included in dashboards
+- **Lineage Exploration** - Tracing data flows from source tables to final models
+- **Ownership & Governance** - Finding data asset owners and governance information
+
+Each use case includes screenshots, explanations, and real examples from this project.

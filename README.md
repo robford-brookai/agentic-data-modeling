@@ -29,6 +29,25 @@ Once your data engineering components are connected to OpenMetadata, you can lev
 
 The MCP server bridges the gap between your metadata and AI, making it accessible and queryable through natural language, dramatically reducing the time needed to understand and explore your data architecture.
 
+## 📚 Documentation
+
+This project includes comprehensive documentation to help you get started:
+
+- **[QUICKSTART.md](QUICKSTART.md)** - Step-by-step setup guide to get the entire stack running locally, including:
+  - Docker environment setup (PostgreSQL, dbt, Metabase, OpenMetadata)
+  - Metadata ingestion configuration
+  - Claude Code MCP server connection
+
+- **[DEMO.md](DEMO.md)** - Real-world use case demonstrations showing how AI + OpenMetadata enables:
+  - Impact analysis before schema changes
+  - Data discovery and validation
+  - Lineage exploration and data provenance
+  - Ownership and governance queries
+
+Start with the [Quick Start Guide](QUICKSTART.md) to set up your environment, then explore the [Demo Use Cases](DEMO.md) to see what's possible!
+
+---
+
 ## 🏗️ Project Architecture & Structure
 
 - **Data Source**: PostgreSQL database
@@ -62,6 +81,7 @@ This setup enables a complete data analytics workflow where:
 │   ├── Dockerfile
 │   ├── requirements.txt
 │   └── scripts/                    # Scripts to seed Postgres and Metabase
-└── README.md
-└── QUICKSTART.md
+├── README.md                       # Project overview and architecture
+├── QUICKSTART.md                   # Step-by-step setup guide
+└── DEMO.md                         # Use case demonstrations
 ```
