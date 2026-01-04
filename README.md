@@ -1,4 +1,4 @@
-# 🤖 Agentic Data Modeling with OpenMetadata
+# 🤖 End To End Agentic Data Modeling: Using AI and OpenMetadata MCP for Impact Analysis
 
 A complete, self-contained data analytics stack that automatically:
 - Seeds marketing data from S3 into local PostgreSQL
