@@ -58,36 +58,80 @@ To double check, visit the Metabase Dashboard [Agentic Data Modeling Demo Dashbo
 
 ![Metabase Dashboard](images/metabase_dashboard.png)
 
-## 🧠 AI Integration with OpenMetadata MCP with Claude Code
+## 🧠 MCP Server Configuration
 
-Connect Claude to your metadata using the OpenMetadata MCP Server:
+This project uses two MCP servers configured in `.mcp.json`: **OpenMetadata** for catalog operations and **Postgres** for direct database queries.
+
+### Postgres MCP (Google GenAI Toolbox)
+
+Download the [GenAI Toolbox](https://googleapis.github.io/genai-toolbox/) binary for your platform:
 
 ```bash
-claude mcp add-json "openmetadata" '{
-  "command": "npx",
-  "args": [
-    "-y", "mcp-remote",
-    "http://localhost:8585/mcp",
-    "--auth-server-url=http://localhost:8585/mcp",
-    "--client-id=openmetadata",
-    "--header", "Authorization:${AUTH_HEADER}"
-  ],
-  "env": {
-    "AUTH_HEADER": "Bearer <OPENMETADATA_JWT_TOKEN>"
-  }
-}'
+# macOS ARM64 (Apple Silicon)
+curl -o bin/toolbox https://storage.googleapis.com/genai-toolbox/v0.27.0/darwin/arm64/toolbox
+
+# macOS Intel
+curl -o bin/toolbox https://storage.googleapis.com/genai-toolbox/v0.27.0/darwin/amd64/toolbox
+
+# Linux AMD64
+curl -o bin/toolbox https://storage.googleapis.com/genai-toolbox/v0.27.0/linux/amd64/toolbox
 ```
 
-Pass the value of `OPENMETADATA_JWT_TOKEN` you got on OpenMetadata settings.
+```bash
+chmod +x bin/toolbox
+```
 
-> You can do this with Cursor by adding it to `mcp.json` file.
+This gives Claude direct SQL access to the database via `list_tables` and `execute_sql` tools — used by the AI Readiness skill to profile columns, discover edge cases, and validate grain.
 
-Then use OpenMetadata MCP Server to ask questions such as:
+### OpenMetadata MCP
 
-- "Can you do an impact on analysis on changing the column `total_conversions` name of `campaign_performance` model?"
+Replace `<YOUR_OPENMETADATA_JWT_TOKEN>` in `.mcp.json` with the token you generated in the previous step.
+
+### Verify `.mcp.json`
+
+Your `.mcp.json` should look like this (already included in the repo):
+
+```json
+{
+  "mcpServers": {
+    "postgres": {
+      "command": "./bin/toolbox",
+      "args": ["--prebuilt", "postgres", "--stdio"],
+      "env": {
+        "POSTGRES_HOST": "localhost",
+        "POSTGRES_PORT": "5432",
+        "POSTGRES_DATABASE": "postgres",
+        "POSTGRES_USER": "postgres",
+        "POSTGRES_PASSWORD": "password"
+      }
+    },
+    "openmetadata": {
+      "command": "npx",
+      "args": [
+        "-y", "mcp-remote",
+        "http://localhost:8585/mcp",
+        "--auth-server-url=http://localhost:8585/mcp",
+        "--client-id=openmetadata",
+        "--header", "Authorization:${AUTH_HEADER}"
+      ],
+      "env": {
+        "AUTH_HEADER": "Bearer <YOUR_OPENMETADATA_JWT_TOKEN>"
+      }
+    }
+  }
+}
+```
+
+> For Cursor, this same config goes in `.cursor/mcp.json`.
+
+Then use the MCP servers to ask questions such as:
+
+- "Can you do an impact analysis on changing the column `total_conversions` name of `campaign_performance` model?"
 - "Is target revenue chart on Metabase considering TV and Radio?"
 - "What tables feed into `user_journey` model?"
-- "Who owns the Agentic Data Modeling Demo dahsboard?"
+- "Who owns the Agentic Data Modeling Demo dashboard?"
+- "Is `user_journey` ready to be consumed by an AI agent?"
+- "Create a business glossary from our dbt models"
 
 ---
 
@@ -95,9 +139,11 @@ Then use OpenMetadata MCP Server to ask questions such as:
 
 **See these use cases in action!** Check out the [**Demo Documentation**](DEMO.md) for detailed walkthroughs showing:
 
-- **Impact Analysis** - How to analyze downstream effects before making schema changes
-- **Data Discovery** - Validating data sources and understanding what's included in dashboards
-- **Lineage Exploration** - Tracing data flows from source tables to final models
-- **Ownership & Governance** - Finding data asset owners and governance information
+- **Impact Analysis** - Understand downstream effects before making schema changes
+- **Data Discovery** - Validate data sources and understand what's included in dashboards
+- **Lineage Exploration** - Trace data flows from source tables to final models
+- **Ownership & Governance** - Find data asset owners and governance information
+- **AI Readiness** - Audit, enrich, and validate dbt models for AI consumption
+- **Glossary Management** - Derive business terms from dbt and maintain them in OpenMetadata
 
 Each use case includes screenshots, explanations, and real examples from this project.

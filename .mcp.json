@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "postgres": {
-      "command": "./PATH/TO/toolbox",
+      "command": "./bin/toolbox",
       "args": ["--prebuilt", "postgres", "--stdio"],
       "env": {
         "POSTGRES_HOST": "localhost",
