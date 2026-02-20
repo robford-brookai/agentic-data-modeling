@@ -10,8 +10,8 @@ By connecting Claude Code to OpenMetadata, you can ask natural language question
 - **Data Discovery**: Find and validate data sources for analysis
 - **Lineage Exploration**: Trace data flows from source to dashboard
 - **Governance**: Identify data owners and compliance requirements
-- **Metadata Enrichment**: Discover undocumented business logic by querying the database and writing enriched context back to the catalog
-- **AI Readiness**: Validate that models have the documentation, tests, and catalog presence needed for AI consumption
+- **AI Readiness**: Audit and enrich dbt models for AI consumption — checks schema quality, queries the database for edge cases, validates catalog presence, and writes fixes back to dbt YAML
+- **Glossary Management**: Derive business terms from dbt models and maintain them as a structured glossary in OpenMetadata
 
 ---
 
@@ -141,95 +141,61 @@ The agent can quickly identify the dashboard owner and any associated teams or g
 
 ---
 
-## Use Case 5: Metadata Enrichment via Database Discovery
-
-**Prerequisite**: Postgres MCP and OpenMetadata MCP servers configured in `.mcp.json`
-
-**Question:** *"Can you enrich the metadata for `daily_summary`?"*
-
-### The Challenge
-The previous use cases are read-only — querying the catalog for answers. But what happens when the AI can also query the actual database? It can discover things that metadata alone can't reveal, and write those findings back to the catalog.
-
-<details>
-  <summary> <h4>✨ Click to see Claude Code output </h4> </summary>
-
-While enriching `daily_summary`, Claude Code reads the dbt SQL and notices several `avg()` columns (`avg_cpc`, `avg_ctr`, `avg_session_duration`, etc.). To validate the descriptions it's about to write, it queries the database — and accidentally discovers a statistical caveat:
-
-1. Reads `daily_summary.sql` and `_marts.yml` → builds context for all columns
-2. Notices `avg(cpc)` pattern → queries Postgres to compare `avg_cpc` vs `total_spend / NULLIF(total_clicks, 0)`
-3. The values diverge — `avg_cpc` is an unweighted average of per-campaign CPCs, not a true portfolio CPC
-4. Flags the finding, writes enriched descriptions back to OpenMetadata via `patch_entity`
-
-### Result
-What started as a routine enrichment task uncovered undocumented business logic: `avg_cpc` is an **average of averages**, not volume-weighted. The same applies to `avg_ctr`, `avg_session_duration`, `avg_pages_per_session`, and `avg_order_value`. These caveats are now documented in OpenMetadata for downstream consumers.
-
-</details>
-
----
-
-## Use Case 6: AI Readiness Assessment
+## Use Case 5: AI Readiness — Audit, Enrich & Validate
 
 **Prerequisite**: Postgres MCP and OpenMetadata MCP servers configured in `.mcp.json`
 
 **Question:** *"Is `user_journey` ready to be consumed by an AI agent?"*
 
 ### The Challenge
-A model can have correct data but still be unusable by AI — missing descriptions, no ownership, no classification tags. Without a systematic check, these gaps go unnoticed until an agent fails silently or returns misleading answers. This skill checks both the dbt schema and the OpenMetadata catalog, then closes the gaps it can.
+A model can have correct data but still be unusable by AI — missing descriptions, no tests on grain columns, gaps in the catalog. This skill audits the dbt schema, queries the database for edge cases, checks the OpenMetadata catalog, enriches dbt YAML, re-ingests, and validates the changes in the catalog.
 
 <details>
   <summary> <h4>✨ Click to see Claude Code output </h4> </summary>
 
-Claude Code runs a three-part audit against `user_journey`:
+Claude Code runs a full audit against `user_journey`:
 
-1. **Checks dbt schema** → model has a description, all 15 columns are in YAML with descriptions, grain column (`user_id`) has `not_null` + `unique` tests
-2. **Checks OpenMetadata catalog** → entity exists, but finds 3 columns without descriptions, no ownership assigned, no classification tags
-3. **Queries the database** → confirms grain (4,521 rows, 4,521 distinct `user_id`s), profiles key columns, discovers that `journey_length_days` is 0 for 38% of users (single-session journeys). Builds 3 example queries for AI agents
-4. **Offers to fix** → generates structured descriptions (incorporating edge cases from the database) for the 3 missing columns and adds classification tags via `patch_entity`
-5. **Re-checks** → updated checklist shows improvement
+1. **Checks dbt schema** → descriptions, column coverage, grain tests
+2. **Queries the database** → confirms grain, profiles columns, discovers edge cases (e.g. 38% of users have zero-length journeys, `avg_cpc` is an unweighted average). Builds example queries for AI agents
+3. **Checks OpenMetadata catalog** → finds 3 columns without descriptions and no ownership
+4. **Enriches** → writes structured descriptions in `_marts.yml` incorporating database findings
+5. **Re-ingests** → `docker compose --profile ingestion up ingest-postgres ingest-dbt`
+6. **Validates** → `get_entity_details` confirms enriched descriptions are now in the catalog
 
-```
-## user_journey — AI Readiness
-
-### dbt Schema
-- [x] Model has description
-- [x] All SQL columns in YAML (15/15)
-- [x] All columns have descriptions
-- [x] Grain has uniqueness tests (user_id: not_null + unique)
-
-### OpenMetadata Catalog
-- [x] Entity exists
-- [x] Table has description
-- [ ] 3/15 columns missing descriptions
-- [ ] No ownership assigned
-- [x] Tags present
-- [ ] No freshness data
-
-### Query Guidance
-Grain check: 4,521 rows, 4,521 distinct user_ids ✓
-Edge cases found:
-- journey_length_days = 0 for 38% of users (single-session journeys)
-- total_conversion_value is NULL for non-converted users
-
-Example queries for AI agents:
-1. Converted multi-channel users with highest value:
-   SELECT user_id, channels_used, total_conversion_value
-   FROM user_journey WHERE user_type = 'converted' AND channels_used >= 3
-   ORDER BY total_conversion_value DESC LIMIT 10
-
-2. Journey length distribution by user type:
-   SELECT user_type, journey_length_category, COUNT(*)
-   FROM user_journey GROUP BY user_type, journey_length_category
-
-3. Users with high touchpoints but no conversion:
-   SELECT user_id, total_touchpoints, channels_used
-   FROM user_journey WHERE user_type = 'non-converted'
-   AND total_touchpoints > 10
-
-Before: PASS 5/9 | After fix: PASS 8/9
-Remaining: ownership (admin action), freshness (enable profiling)
-```
+<!-- TODO: add screenshot -->
+![AI Readiness Audit](images/demo_claude_code_ai_readiness.png)
 
 ### Result
-The model goes from **5/9 to 8/9** readiness. The database audit uncovered that 38% of users have zero-length journeys — a caveat now baked into the enriched descriptions. Auto-fixable gaps (column descriptions and tags) are patched into OpenMetadata with context from both dbt and the actual data. The query examples give AI agents a head start on how to consume the model. Remaining gaps — ownership and freshness — are flagged for manual action.
+The model goes from **6/8 to 7/8** readiness. Database-discovered caveats are now baked into dbt descriptions, and `get_entity_details` confirms they propagated to the catalog after re-ingestion. Ownership is flagged for manual action in OpenMetadata.
+
+</details>
+
+---
+
+## Use Case 6: Glossary Management — Business Terms from dbt to OpenMetadata
+
+**Prerequisite**: OpenMetadata MCP server configured in `.mcp.json` with write access (`create_glossary`, `create_glossary_term`)
+
+**Question:** *"Create a business glossary from our dbt models"*
+
+### The Challenge
+Business terms like `roas`, `cpa`, `ctr` are defined per-model in dbt YAML but never surfaced as a shared vocabulary. Without a central glossary, teams interpret metrics differently and AI agents have no authoritative reference for business concepts.
+
+<details>
+  <summary> <h4>✨ Click to see Claude Code output </h4> </summary>
+
+Claude Code scans all dbt YAML files and builds a categorized glossary in OpenMetadata:
+
+1. **Scans dbt YAML** → reads `_marts.yml`, `_intermediate.yml`, `_sources.yml` — extracts column names and descriptions
+2. **Groups into categories** → maps terms to 6 business categories (KPIs, Attribution, User Journey, Campaign Metrics, Conversion Metrics, Session Metrics)
+3. **Checks existing** → `search_metadata` to detect what already exists
+4. **Creates glossary** → `create_glossary` for the parent, `create_glossary_term` for categories and individual terms
+5. **Reports** → summary of created/existing/needs-update counts
+
+<!-- TODO: add screenshot -->
+![Glossary Management](images/demo_claude_code_glossary.png)
+
+### Result
+24 business terms organized under 6 categories in OpenMetadata. Each term links back to its source dbt model(s). Run `/metadata-glossary sync` to add missing terms incrementally, or `/metadata-glossary audit` for a dry-run diff.
 
 </details>
