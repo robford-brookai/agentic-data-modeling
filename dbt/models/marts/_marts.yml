@@ -121,7 +121,12 @@ models:
       - name: total_conversions
         description: Total number of conversions by this user
       - name: total_conversion_value
-        description: Total revenue from this user's conversions in dollars
+        description: >
+          Total revenue from this user's conversions in dollars.
+          [Known Issues / Caveats] COALESCEd to 0 for non-converted users,
+          but first_conversion_date and last_conversion_date remain NULL for
+          those same users. Filter on total_conversion_value > 0 alone does
+          not guarantee non-NULL date columns.
       - name: first_conversion_date
         description: Timestamp of the user's first conversion
       - name: last_conversion_date
@@ -133,6 +138,9 @@ models:
           User classification based on conversion:
           - 'converted': User has made at least one conversion
           - 'non-converted': User has not converted
+          [Known Issues / Caveats] Dataset is heavily skewed: 98.5% converted
+          (2,166 users) vs 1.5% non-converted (34 users). Queries targeting
+          non-converted users will return a very small sample.
       - name: channel_behavior
         description: |
           User classification based on channel diversity:
@@ -145,6 +153,9 @@ models:
           - 'long': Journey of 7+ days
           - 'medium': Journey of 1-6 days
           - 'short': Journey of less than 1 day
+          [Known Issues / Caveats] All 2,200 users currently fall into 'long'
+          (80-85 days). The 'medium' and 'short' categories are empty in the
+          current dataset. Queries filtering by these values will return zero rows.
 
   - name: channel_attribution
     description: |
