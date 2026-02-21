@@ -6,7 +6,7 @@ cleaned as (
     select
         conversion_id,
         session_id,
-        date,
+        date::date as date,
         user_id,
         attributed_campaign_id,
         attribution_model,

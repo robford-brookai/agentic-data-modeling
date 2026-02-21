@@ -5,7 +5,7 @@ with source as (
 cleaned as (
     select
         campaign_id,
-        date,
+        date::date as date,
         campaign_name,
         channel,
         status,

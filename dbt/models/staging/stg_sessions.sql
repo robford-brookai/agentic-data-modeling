@@ -5,7 +5,7 @@ with source as (
 cleaned as (
     select
         session_id,
-        date,
+        date::date as date,
         user_id,
         campaign_id,
         creative_id,
