@@ -17,17 +17,62 @@ A complete, self-contained data analytics stack that automatically:
 
 This provides a complete view of our data ecosystem, enabling you to explore metadata, view lineage, and understand dependencies across all your data assets.
 
-## 💬 End To End Data Modeling with Claude & OpenMetadata MCP Server
+## 💬 End To End Data Modeling with Claude & MCP Servers
 
-Once your data engineering components are connected to OpenMetadata, you can leverage the **Claude MCP (Model Context Protocol) Server** to interact with your metadata using natural language. This enables:
+This project connects Claude to the data stack through **two MCP servers**, giving AI direct access to both metadata intelligence and raw data:
+
+| MCP Server | Purpose | Key Tools |
+|---|---|---|
+| **OpenMetadata MCP** | Metadata catalog — lineage, search, glossaries, entity details | `search_metadata`, `get_entity_lineage`, `get_entity_details`, `create_glossary_term` |
+| **PostgreSQL MCP** | Direct database access — query data, profile columns, validate models | `execute_sql`, `list_tables`, `list_table_stats` |
+
+The **PostgreSQL MCP** uses [Google GenAI Toolbox](https://github.com/googleapis/genai-toolbox) (pre-downloaded binary in `bin/toolbox`) to give Claude direct SQL access to the local PostgreSQL instance. This enables data profiling, edge case discovery, and validation queries — capabilities used heavily by the AI Readiness skill.
+
+The **OpenMetadata MCP** connects to the OpenMetadata server's native MCP endpoint, providing metadata search, lineage tracing, and glossary management through natural language.
+
+Both servers are configured in `.mcp.json` at the project root, with permissions managed in `.claude/settings.local.json`.
+
+### What this enables
 
 - **Natural Language Queries**: Ask questions about your data architecture in plain English, such as "What tables feed into the `campaign_performance` model?" or "Show me all dashboards that use user data"
 - **Intelligent Exploration**: Discover relationships and dependencies without manually navigating through the UI
 - **Documentation Assistance**: Get instant answers about column meanings, data types, and business context
 - **Lineage Visualization**: Understand data flows through conversational queries rather than complex graph navigation
+- **Data Profiling**: Query the database directly to discover NULLs, distributions, edge cases, and grain violations
 - **Impact Analysis**: Quickly identify what would be affected by changes to specific tables or models
 
-The MCP server bridges the gap between your metadata and AI, making it accessible and queryable through natural language, dramatically reducing the time needed to understand and explore your data architecture.
+## 🛠️ Claude Code Skills
+
+The project includes three custom **Claude Code skills** (in `.claude/skills/`) that encode repeatable data engineering workflows as slash commands. These skills combine the OpenMetadata and PostgreSQL MCP tools with local file analysis to automate common tasks:
+
+### `/metadata-impact-analysis`
+Analyze downstream impact before making schema changes. Traces lineage through dbt models and dashboards to identify what breaks if a column is renamed, dropped, or its type changes.
+
+**Triggers**: "impact analysis", "what breaks if", "can I rename", "can I drop", "downstream impact"
+
+**How it works**: Confirms the entity exists in OpenMetadata → traces downstream lineage → greps dbt SQL files for column references → checks dashboard impact → generates a risk-rated report (HIGH/MEDIUM/LOW).
+
+![Impact Analysis](images/demo_claude_code_impact_analysis.png)
+
+### `/metadata-ai-readiness`
+Audit and enrich dbt mart models for AI consumption. Checks schema quality, queries the database to discover edge cases, validates OpenMetadata catalog presence, and writes fixes back to dbt YAML.
+
+**Triggers**: "ai readiness", "is this model ready", "checklist for", "enrich", "pre-merge check"
+
+**How it works**: Reads dbt schema YAML → queries PostgreSQL for row counts, NULL rates, distributions, and grain validation → checks OpenMetadata entity existence → generates a pass/fail checklist → optionally enriches `_marts.yml` with AI-friendly descriptions.
+
+![AI Readiness](images/demo_claude_code_ai_readiness.png)
+
+### `/metadata-glossary`
+Manage an OpenMetadata glossary derived from dbt models. Parses dbt YAML for column names and descriptions, groups them into business categories, and creates/syncs glossary terms via OpenMetadata.
+
+**Triggers**: "metadata glossary", "create glossary", "business terms", "sync glossary"
+
+**How it works**: Scans dbt YAML files for column definitions → groups terms into 6 business categories (KPIs, Attribution, User Journey, Campaign Metrics, Conversion Metrics, Session Metrics) → creates or syncs the glossary in OpenMetadata with parent-child hierarchy.
+
+**Modes**: `audit` (dry-run), `create` (full creation), `sync` (add missing terms only)
+
+![Glossary](images/demo_claude_code_glossary.png)
 
 ## 📚 Documentation
 
@@ -56,7 +101,7 @@ Start with the [Quick Start Guide](QUICKSTART.md) to set up your environment, th
 - **Transformation**: [dbt](https://www.getdbt.com/) for data modeling and transformation.
 - **Visualisation**: [Metabase](https://www.metabase.com/) dashboards for business intelligence
 - **Metadata Management**: [OpenMetadata](https://open-metadata.org/) to unify all metadata in one platform (hosted locally)
-- **AI Integration**: OpenMetadata MCP Server to connect with Claude Code or Cursor and enable natural language queries
+- **AI Integration**: OpenMetadata MCP + PostgreSQL MCP to connect with Claude Code and enable natural language queries, data profiling, and automated workflows via custom skills
 
 ![Architecture](images/architecture.png)
 
@@ -65,17 +110,29 @@ This setup enables a complete data analytics workflow where:
 2. dbt transforms and models the data locally
 3. Metabase provides interactive dashboards
 4. OpenMetadata centralizes metadata from all components via **YAML-based ingestion** (not UI), providing unified lineage and metadata views
-5. Claude MCP Server allows AI-powered exploration and querying of the metadata through natural language
+5. Claude connects via two MCP servers (OpenMetadata + PostgreSQL) for metadata exploration and direct data access
+6. Custom skills (`/metadata-impact-analysis`, `/metadata-ai-readiness`, `/metadata-glossary`) automate repeatable data engineering workflows
 
 **Key Feature:** All OpenMetadata ingestion is configured through YAML files, enabling Infrastructure as Code (IaC) practices. Ingestion runs on-demand using Docker Compose profiles, giving you control over when metadata is synchronized. While OpenMetadata provides a UI for configuration, this project uses YAML files for version control, automation, and reproducibility.
 
 ```text
+├── .claude/                        # Claude Code configuration
+│   ├── settings.local.json         # MCP permissions & server config
+│   └── skills/                     # Custom Claude Code skills
+│       ├── metadata-impact-analysis/
+│       ├── metadata-ai-readiness/
+│       └── metadata-glossary/
+├── .mcp.json                       # MCP server definitions (Postgres + OpenMetadata)
+├── bin/
+│   └── toolbox                     # Google GenAI Toolbox binary (Postgres MCP)
 ├── dbt/                            # dbt project
-│   ├── models/         
+│   ├── models/
+│   │   ├── staging/                # 4 staging views
+│   │   ├── intermediate/           # 6 intermediate views
+│   │   └── marts/                  # 4 mart tables (primary analytics)
 │   ├── dbt_project.yml
-│   └── profiles.yml                
-├── images/                         # Architecture diagrams
-│   └── architecture.png
+│   └── profiles.yml
+├── images/                         # Architecture diagrams & demo screenshots
 ├── openmetadata/
 │   ├── docker-compose.yml          # Main orchestration file
 │   └── ingestion-configs/          # YAML-based ingestion configs
