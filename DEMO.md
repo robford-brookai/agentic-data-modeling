@@ -34,7 +34,8 @@ The skill executes a sequential workflow:
 3. **Checks SQL references** → `Grep` across `dbt/models/` finds all direct column references, including models not yet in OpenMetadata lineage
 4. **Checks dashboards** → reports connected Metabase dashboards from lineage
 
-![Impact Analysis](images/demo_claude_code_impact_analysis.png)
+![Impact Analysis — Steps 1-3](images/demo_claude_code_impact_analysis_1.png)
+![Impact Analysis — Report](images/demo_claude_code_impact_analysis_2.png)
 
 ### Result
 The skill identifies that renaming `total_conversions` is **HIGH risk**:
