@@ -48,31 +48,11 @@ The project includes three custom **Claude Code skills** (in `.claude/skills/`) 
 ### `/metadata-impact-analysis`
 Analyze downstream impact before making schema changes. Traces lineage through dbt models and dashboards to identify what breaks if a column is renamed, dropped, or its type changes.
 
-**Triggers**: "impact analysis", "what breaks if", "can I rename", "can I drop", "downstream impact"
-
-**How it works**: Confirms the entity exists in OpenMetadata → traces downstream lineage → greps dbt SQL files for column references → checks dashboard impact → generates a risk-rated report (HIGH/MEDIUM/LOW).
-
-![Impact Analysis](images/demo_claude_code_impact_analysis.png)
-
 ### `/metadata-ai-readiness`
 Audit and enrich dbt mart models for AI consumption. Checks schema quality, queries the database to discover edge cases, validates OpenMetadata catalog presence, and writes fixes back to dbt YAML.
 
-**Triggers**: "ai readiness", "is this model ready", "checklist for", "enrich", "pre-merge check"
-
-**How it works**: Reads dbt schema YAML → queries PostgreSQL for row counts, NULL rates, distributions, and grain validation → checks OpenMetadata entity existence → generates a pass/fail checklist → optionally enriches `_marts.yml` with AI-friendly descriptions.
-
-![AI Readiness](images/demo_claude_code_ai_readiness.png)
-
 ### `/metadata-glossary`
 Manage an OpenMetadata glossary derived from dbt models. Parses dbt YAML for column names and descriptions, groups them into business categories, and creates/syncs glossary terms via OpenMetadata.
-
-**Triggers**: "metadata glossary", "create glossary", "business terms", "sync glossary"
-
-**How it works**: Scans dbt YAML files for column definitions → groups terms into 6 business categories (KPIs, Attribution, User Journey, Campaign Metrics, Conversion Metrics, Session Metrics) → creates or syncs the glossary in OpenMetadata with parent-child hierarchy.
-
-**Modes**: `audit` (dry-run), `create` (full creation), `sync` (add missing terms only)
-
-![Glossary](images/demo_claude_code_glossary.png)
 
 ## 📚 Documentation
 
