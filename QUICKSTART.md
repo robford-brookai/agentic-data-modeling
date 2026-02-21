@@ -83,9 +83,13 @@ chmod +x bin/toolbox
 
 This gives Claude direct SQL access to the database via `list_tables` and `execute_sql` tools — used by the AI Readiness skill to profile columns, discover edge cases, and validate grain.
 
+> **Docs**: [GenAI Toolbox — Postgres MCP Setup](https://googleapis.github.io/genai-toolbox/how-to/connect-ide/postgres_mcp/#configure-your-mcp-client)
+
 ### OpenMetadata MCP
 
 Replace `<YOUR_OPENMETADATA_JWT_TOKEN>` in `.mcp.json` with the token you generated in the previous step.
+
+> **Docs**: [OpenMetadata MCP Reference](https://docs.open-metadata.org/v1.10.x/how-to-guides/mcp/reference)
 
 ### Verify `.mcp.json`
 
