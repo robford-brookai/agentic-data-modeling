@@ -9,15 +9,29 @@ Analyze the downstream impact of a schema change (rename, drop, type change) on 
 
 ## How It Works
 
-1. **Parse `$ARGUMENTS`** — Extract model and column from input. Accepts:
-   - `campaign_performance.total_conversions` → specific column
-   - `campaign_performance` → full table (all columns)
-2. **Find the entity** — `get_entity_details` with FQN `marketing_postgres.marketing.public.{model}`, `entity_type: "table"`. Confirm the column exists.
-3. **Trace downstream lineage** — `get_entity_lineage` on the same FQN. Collect all downstream nodes: tables, views, dashboards.
-4. **Check column references** — For each downstream table, call `get_entity_details` and scan column descriptions and names for references to the target column. Also read the dbt SQL (`dbt/models/**/{downstream_model}.sql`) to find direct SQL references.
-5. **Check dashboard impact** — For downstream dashboards/charts, report name + service (Metabase, etc.). Note: Metabase integration links at dashboard level only, not chart-level.
-6. **Identify ownership** — For each impacted entity, report the owner (if set) so the user knows who to notify.
-7. **Report** — Structured impact report with risk assessment.
+Execute steps **sequentially** — complete each step before starting the next. Do NOT fire multiple MCP calls or file reads in parallel.
+
+### Step 1: Parse input
+Extract model and column from `$ARGUMENTS`. Accepts:
+- `campaign_performance.total_conversions` → specific column
+- `campaign_performance` → full table (all columns)
+- Natural language like "rename total_conversions from campaign_performance" → extract both
+
+### Step 2: Confirm entity exists
+Call `search_metadata` to find the table by name. This returns columns inline so you can confirm the column exists and get the correct FQN. Do NOT call `get_entity_details` at this stage.
+
+### Step 3: Trace downstream lineage
+Call `get_entity_lineage` on the confirmed FQN. Collect all downstream nodes (tables, views, dashboards). Present a brief summary to the user before continuing:
+> "Found N downstream entities: [list]. Checking column references..."
+
+### Step 4: Check SQL references
+Use `Grep` to search for the column name across `dbt/models/` SQL and YAML files. This is a single local search — no MCP calls needed.
+
+### Step 5: Check dashboard impact
+If lineage returned dashboard nodes, call `search_metadata` for dashboards. If no dashboards in lineage, skip this step.
+
+### Step 6: Compile report
+Combine lineage, SQL grep results, and dashboard data into the output format below. Include ownership from any entity that had it set.
 
 ## MCP Tools
 
@@ -27,7 +41,7 @@ Analyze the downstream impact of a schema change (rename, drop, type change) on 
 
 ## Reference
 
-**FQN pattern**: `marketing_postgres.marketing.public.{model}`
+**FQN pattern**: `marketing_postgres.postgres.marketing.{model}`
 **Mart models**: `campaign_performance`, `daily_summary`, `user_journey`, `channel_attribution`
 **dbt SQL**: `dbt/models/marts/{model}.sql`, `dbt/models/intermediate/{model}.sql`
 

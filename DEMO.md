@@ -21,29 +21,31 @@ By connecting Claude Code to OpenMetadata, you can ask natural language question
 
 🎥 **[Watch: Configure Lineage in OpenMetadata](https://focusee.imobie.com/share/256e1b5661a74775aad7205f25f67672)**
 
-**Question:** *"Can you do an impact analysis on changing the column `total_conversions` name of `campaign_performance` model?"*
+**Trigger:** `/metadata-impact-analysis i need to rename total_conversions from campaign_performance model, can you check for downstream impact?`
 
 ### The Challenge
 Before renaming a column in your data model, you need to understand what will break downstream. Manually tracing dependencies across dbt models, dashboards, and reports is time-consuming and error-prone.
 <details>
   <summary> <h4>✨ Click to see Claude Code output </h4> </summary>
 
-Claude Code uses the OpenMetadata MCP to:
-1. Find the `campaign_performance` model
-2. Trace its downstream lineage
-3. Identify which models and dashboards use the `total_conversions` column
-4. Provide a comprehensive impact report
+The skill executes a sequential workflow:
+1. **Confirms entity** → `search_metadata` finds `campaign_performance` and validates `total_conversions` exists (BIGINT)
+2. **Traces lineage** → `get_entity_lineage` discovers downstream nodes with column-level detail
+3. **Checks SQL references** → `Grep` across `dbt/models/` finds all direct column references, including models not yet in OpenMetadata lineage
+4. **Checks dashboards** → reports connected Metabase dashboards from lineage
 
 ![Impact Analysis](images/demo_claude_code_impact_analysis.png)
 
 ### Result
-The agent identifies that renaming `total_conversions` will break:
-- **1 downstream table**: `daily_summary` (with 3 column references)
-- **1 dashboard**: "Agentic Data Modeling Demo" on Metabase
+The skill identifies that renaming `total_conversions` is **HIGH risk**:
+- **2 downstream tables**: `daily_summary` (3 refs in SQL — lines 31, 36, 38) and `user_journey` (2 refs — lines 23, 30)
+- **1 Metabase dashboard**: "Agentic Data Modeling Demo" (dashboard-level only)
+- **Calculated KPIs break**: `conversion_rate`, `overall_cpa`, `cost_per_conversion` all depend on this column
+- **Upstream origin**: `int_conversion_metrics_by_campaign` and `int_user_conversions` also define `total_conversions` — an end-to-end rename must include these
 
-This saves hours of manual investigation and prevents production incidents.
+The report includes exact line numbers, YAML files to update (`_marts.yml`, `_intermediate.yml`), and flags that no owners are set on downstream assets.
 
-> Note that Metabase integration only allows linking dashboards, so this use case is limited to that granularity level.
+> Note that Metabase integration only allows linking dashboards, so dashboard impact is limited to that granularity level.
 
 </details>
 
@@ -145,7 +147,7 @@ The agent can quickly identify the dashboard owner and any associated teams or g
 
 **Prerequisite**: Postgres MCP and OpenMetadata MCP servers configured in `.mcp.json`
 
-**Question:** *"Is `user_journey` ready to be consumed by an AI agent?"*
+**Trigger:** `/metadata-ai-readiness Is user_journey ready to be consumed by an AI agent?`
 
 ### The Challenge
 A model can have correct data but still be unusable by AI — missing descriptions, no tests on grain columns, gaps in the catalog. This skill audits the dbt schema, queries the database for edge cases, checks the OpenMetadata catalog, enriches dbt YAML, re-ingests, and validates the changes in the catalog.
@@ -176,7 +178,7 @@ The model goes from **6/8 to 7/8** readiness. Database-discovered caveats are no
 
 **Prerequisite**: OpenMetadata MCP server configured in `.mcp.json` with write access (`create_glossary`, `create_glossary_term`)
 
-**Question:** *"Create a business glossary from our dbt models"*
+**Trigger:** `/metadata-glossary Create a business glossary from our dbt models`
 
 ### The Challenge
 Business terms like `roas`, `cpa`, `ctr` are defined per-model in dbt YAML but never surfaced as a shared vocabulary. Without a central glossary, teams interpret metrics differently and AI agents have no authoritative reference for business concepts.
