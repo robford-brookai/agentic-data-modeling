@@ -43,6 +43,8 @@ This project includes comprehensive documentation to help you get started:
   - Data discovery and validation
   - Lineage exploration and data provenance
   - Ownership and governance queries
+  - AI readiness audits — enriching dbt models for AI consumption
+  - Glossary management — deriving business terms from dbt into OpenMetadata
 
 Start with the [Quick Start Guide](QUICKSTART.md) to set up your environment, then explore the [Demo Use Cases](DEMO.md) to see what's possible!
 

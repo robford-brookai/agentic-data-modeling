@@ -201,8 +201,11 @@ Claude Code scans all dbt YAML files and builds a categorized glossary in OpenMe
 4. **Creates glossary** → `create_glossary` for the parent, `create_glossary_term` for categories and individual terms
 5. **Reports** → summary of created/existing/needs-update counts
 
-<!-- TODO: add screenshot -->
 ![Glossary Management](images/demo_claude_code_glossary.png)
+
+After creation, the glossary is live in OpenMetadata with all 6 categories and 24 terms:
+
+![Glossary in OpenMetadata](images/demo_openmetadata_glossary.png)
 
 ### Result
 24 business terms organized under 6 categories in OpenMetadata. Each term links back to its source dbt model(s). Run `/metadata-glossary sync` to add missing terms incrementally, or `/metadata-glossary audit` for a dry-run diff.
