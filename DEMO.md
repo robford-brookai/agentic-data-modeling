@@ -170,6 +170,10 @@ After the audit, the skill enriches `_marts.yml` descriptions with database-disc
 
 ![AI Readiness Enrichment](images/demo_claude_code_ai_readiness_enrich.png)
 
+After re-ingestion, the enriched descriptions are confirmed in the OpenMetadata catalog:
+
+![AI Readiness Validated in OpenMetadata](images/demo_openmetadata_ai_readiness_validated.png)
+
 ### Result
 The model goes from **6/8 to 7/8** readiness. Database-discovered caveats are now baked into dbt descriptions, and `get_entity_details` confirms they propagated to the catalog after re-ingestion. Ownership is flagged for manual action in OpenMetadata.
 
