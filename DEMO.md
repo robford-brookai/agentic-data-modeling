@@ -34,8 +34,7 @@ The skill executes a sequential workflow:
 3. **Checks SQL references** → `Grep` across `dbt/models/` finds all direct column references, including models not yet in OpenMetadata lineage
 4. **Checks dashboards** → reports connected Metabase dashboards from lineage
 
-![Impact Analysis — Steps 1-3](images/demo_claude_code_impact_analysis_1.png)
-![Impact Analysis — Report](images/demo_claude_code_impact_analysis_2.png)
+![Impact Analysis](images/demo_claude_code_impact_analysis.png)
 
 ### Result
 The skill identifies that renaming `total_conversions` is **HIGH risk**:
@@ -165,7 +164,6 @@ Claude Code runs a full audit against `user_journey`:
 5. **Re-ingests** → `docker compose --profile ingestion up ingest-postgres ingest-dbt`
 6. **Validates** → `get_entity_details` confirms enriched descriptions are now in the catalog
 
-<!-- TODO: add screenshot -->
 ![AI Readiness Audit](images/demo_claude_code_ai_readiness.png)
 
 ### Result
